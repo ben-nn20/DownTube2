@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <!-- Created with Vectornator for iOS (http://vectornator.io/) --><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg height="100%" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="100%" xmlns:vectornator="http://vectornator.io" version="1.1" viewBox="0 0 1024 1024">
+<metadata>
+<vectornator:setting key="DimensionsVisible" value="1"/>
+<vectornator:setting key="PencilOnly" value="0"/>
+<vectornator:setting key="SnapToPoints" value="0"/>
+<vectornator:setting key="OutlineMode" value="0"/>
+<vectornator:setting key="CMYKEnabledKey" value="1"/>
+<vectornator:setting key="RulersVisible" value="1"/>
+<vectornator:setting key="SnapToEdges" value="0"/>
+<vectornator:setting key="GuidesVisible" value="0"/>
+<vectornator:setting key="DisplayWhiteBackground" value="0"/>
+<vectornator:setting key="doHistoryDisabled" value="0"/>
+<vectornator:setting key="SnapToGuides" value="1"/>
+<vectornator:setting key="TimeLapseWatermarkDisabled" value="0"/>
+<vectornator:setting key="Units" value="Pixels"/>
+<vectornator:setting key="DynamicGuides" value="0"/>
+<vectornator:setting key="IsolateActiveLayer" value="1"/>
+<vectornator:setting key="SnapToGrid" value="0"/>
+</metadata>
+<defs>
+<linearGradient y1="516.298" id="LinearGradient" x1="-6.10368" y2="516.298" x2="1026.71" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 0.989686 0 -0.0129395)">
+<stop stop-color="#fa1414" offset="0"/>
+<stop stop-color="#b60303" offset="1"/>
+</linearGradient>
+<radialGradient cx="512.604" r="406.266" id="RadialGradient" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 0 0)" cy="512">
+<stop stop-color="#50ff00" offset="0.00615777"/>
+<stop stop-color="#06d939" offset="0.956974"/>
+</radialGradient>
+</defs>
+<g id="Layer 2" vectornator:layerName="Layer 2">
+<path d="M-6.10368-1.25457L1026.71-1.25457L1026.71-1.25457L1026.71+1023.17L1026.71+1023.17L-6.10368+1023.17L-6.10368+1023.17L-6.10368-1.25457" opacity="1" fill="url(#LinearGradient)"/>
+<path d="M462.229+130.325L461.886+130.325L461.886+417.224L376.41+417.224L307.104+417.224L406.723+583.003L512.604+744.312L617.574+577.235L718.104+417.224L626.827+417.224L564.386+417.224L564.386+131.218M512.589+105.734C288.216+105.734+106.339+287.643+106.339+512.016C106.339+736.388+288.216+918.266+512.589+918.266C736.962+918.266+918.87+736.388+918.87+512.016C918.87+287.643+736.962+105.734+512.589+105.734ZM516.495+177.297C702.162+177.297+852.683+327.817+852.683+513.484C852.683+699.151+702.162+849.672+516.495+849.672C330.828+849.672+180.308+699.151+180.308+513.484C180.308+327.817+330.828+177.297+516.495+177.297Z" opacity="1" fill="url(#RadialGradient)"/>
+</g>
+</svg>

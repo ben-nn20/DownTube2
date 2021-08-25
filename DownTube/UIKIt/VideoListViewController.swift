@@ -25,9 +25,9 @@ class VideoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let numberOfCells: Int
         if Settings.shared.groupChannelsIntoFolders {
-            numberOfCells = videoDatabase.channelFolders.count + videoDatabase.videos.count
+            numberOfCells = VideoDatabase.shared.channelFolders.count + VideoDatabase.shared.videos.count
         } else {
-            numberOfCells = videoDatabase.videoFolders.count
+            numberOfCells = VideoDatabase.shared.videoFolders.count
         }
         return numberOfCells
     }
@@ -36,7 +36,7 @@ class VideoListViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "videoCell", for: indexPath) as! VideoFolderTableViewCell
         let row = indexPath.row
         if Settings.shared.groupChannelsIntoFolders {
-            let videoFolder = videoDatabase.videoFolders[row]
+            let videoFolder = VideoDatabase.shared.videoFolders[row]
             cell.configureWith(videoFolder: videoFolder)
         } else {
             

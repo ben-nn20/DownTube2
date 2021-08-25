@@ -12,12 +12,16 @@ class DTDownloadManager: NSObject {
     private override init() {}
     typealias DownloadTaskInfo = (videoTask: URLSessionDownloadTask, video: Video)
     typealias DownloadURLInfo = (videoURL: URL, video: Video)
+    var urlSessionCallback: (() -> Void)?
     lazy private var urlSession: URLSession = {
         let configuration = URLSessionConfiguration.background(withIdentifier: "VideoDownloaderConfiguaration")
         configuration.isDiscretionary = false
         configuration.sessionSendsLaunchEvents = true
         return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
     }()
+    var hasDownloads: Bool {
+        !(downloadingVideos.isEmpty && downloadQueue.isEmpty)
+    }
     var numberOfConcurrentDownloads = 3
     private var downloadingVideos = [DownloadTaskInfo]()
     private var downloadQueue = [DownloadURLInfo]()
@@ -99,6 +103,11 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
             logs.insert(error, at: 0)
+        }
+    }
+    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        DispatchQueue.main.async { [weak self] in
+            self?.urlSessionCallback?()
         }
     }
 }

@@ -12,21 +12,21 @@ class DTNotificationManager {
     var allowed = false
     static var shared = DTNotificationManager()
     func requestAuthorization() {
-        unCenter.requestAuthorization(options: [.provisional, .sound]) { [self] granted, error in
+        unCenter.requestAuthorization(options: [.provisional, .sound, .badge, .alert]) { [self] granted, error in
             guard error == nil else { return }
             allowed = granted
         }
     }
-    func sendNotification(title: String, message: String, thumbnailImage: URL) {
+    func sendNotification(title: String, message: String, identifier: String = "DownloadNotif", thumbnailImage: URL?) {
         let notif = UNMutableNotificationContent()
         notif.body = message
         notif.title = title
         notif.sound = UNNotificationSound.default
-        if let attachment = try? UNNotificationAttachment(identifier: "thumbnail", url: thumbnailImage, options: nil) {
-            notif.attachments = [attachment]
+        if let thumbnailImage = thumbnailImage, let imageAttachment = try? UNNotificationAttachment(identifier: "thumbnail", url: thumbnailImage, options: nil) {
+            notif.attachments = [imageAttachment]
         }
         
-        let request = UNNotificationRequest(identifier: "DownloadNotif", content: notif, trigger: nil)
+        let request = UNNotificationRequest(identifier: identifier, content: notif, trigger: nil)
         unCenter.add(request, withCompletionHandler: nil)
     }
 }

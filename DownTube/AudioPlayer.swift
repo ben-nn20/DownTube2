@@ -7,19 +7,18 @@
 
 import AVFoundation
 import MediaPlayer
-import Combine
 
 class AudioPlayer: ObservableObject {
-    static var shared = AudioPlayer()
-    var player = AVAudioPlayer()
-    var commandCenter = MPRemoteCommandCenter.shared()
-    var infoCenter = MPNowPlayingInfoCenter.default()
+    static let shared = AudioPlayer()
+    private var player = AVAudioPlayer()
+    let commandCenter = MPRemoteCommandCenter.shared()
+    let infoCenter = MPNowPlayingInfoCenter.default()
     @Published var currentlyPlayingVideo: Video?
     @Published var currentlyPlayingFolder: Folder?
     @Published var duration = 0.0
     @Published var currentTime = 0.0
     
-    var currentTimeCancellable: AnyCancellable?
+    var currentTimeTimer: Timer?
     private init() {
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] event in
@@ -51,24 +50,30 @@ class AudioPlayer: ObservableObject {
         commandCenter.changePlaybackPositionCommand.isEnabled = true
         commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
             let position = (event as! MPChangePlaybackPositionCommandEvent).positionTime
-            self?.play(at: CMTime(seconds: position, preferredTimescale: 1))
+            self?.player.play(atTime: position)
             return .success
         }
     }
     func play(_ video: Video? = nil) {
-        
+        guard !player.isPlaying else { return }
         if let video = video {
             try? createPlayer(with: video)
         }
-        let success: ()? = try? AVAudioSession.sharedInstance().setActive(true, options: [])
-        if success != nil {
-            player.prepareToPlay()
-            player.play()
-            updateNowPlayingInfoView(elaspedTime: nil)
-            currentTimeCancellable = player.publisher(for: \.currentTime).sink { [weak self] in
-                self?.updateNowPlayingInfoView(elaspedTime: $0)
+        try? AVAudioSession.sharedInstance().setActive(true, options: [])
+        duration = player.duration
+        updateNowPlayingInfoView(elaspedTime: nil)
+        player.play()
+        currentTimeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { [self] timer in
+            if self.player.isPlaying {
+                self.updateNowPlayingInfoView(elaspedTime: player.currentTime)
+                self.currentTime = player.currentTime
+                if let currentlyPlayingVideo = currentlyPlayingVideo {
+                    currentlyPlayingVideo.playbackPosition = player.currentTime
+                }
+            } else {
+                timer.invalidate()
             }
-        }
+        })
     }
     func pause() {
         player.pause()
@@ -108,36 +113,32 @@ class AudioPlayer: ObservableObject {
     }
     /// Sets player to video
     func createPlayer(with video: Video) throws {
-        Task.init {
-            guard let data = await video.getAudio() else {
-                print("Failed to get audio data")
-                throw NSError(domain: "Unable to get audio.", code: 0, userInfo: nil)
-            }
-            do {
-                player = try AVAudioPlayer(data: data)
-                currentlyPlayingVideo = video
-            } catch {
-                logs.insert(error, at: 0)
-                print(error)
-            }
+        video.lastOpened = Date()
+        do {
+            player = try AVAudioPlayer(contentsOf: video.videoUrl, fileTypeHint: "mp4")
+            currentlyPlayingVideo = video
+        } catch {
+            logs.insert(error, at: 0)
+            print(error)
         }
+        
     }
-    /// Seeks forward by fifteen seconds
+    /// Seeks forward by a given interval seconds
     func seekForward(_ interval: Double) {
-        // If remaining time is greater than 15 seconds skip ahead else skip to the end.
+        player.pause()
         if player.duration - player.currentTime > interval {
-            player.play(atTime: player.currentTime + interval)
+            print(player.play(atTime: player.currentTime + interval))
         } else {
-            player.play(atTime: player.duration)
+            print(player.play(atTime: player.duration))
         }
+        player.play()
     }
-    /// Seeks back by fifteen seconds.
+    /// Seeks back by a given interval seconds.
     func seekBack(_ interval: Double) {
-        // If current time is greater that 15 seconds skip back else play at the beginning.
         if player.currentTime > interval {
-            player.play(atTime: player.currentTime - interval)
+            print(player.play(atTime: player.currentTime - interval))
         } else {
-            player.play(atTime: 0)
+            print(player.play(atTime: 0))
         }
     }
 }

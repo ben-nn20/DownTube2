@@ -6,9 +6,10 @@
 //
 
 import Combine
-import AVFAudio
-
-class MainViewUpdator: ObservableObject {
-    @Published var audioIsPlaying = false
+ class MainViewUpdator: ObservableObject {
     static var shared = MainViewUpdator()
+    
+    @Published var audioIsPlaying = false
+    
 }
+

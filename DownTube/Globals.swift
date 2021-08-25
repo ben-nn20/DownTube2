@@ -6,7 +6,6 @@
 //
 
 import Foundation
+import CoreData
 
 var logs = [Error]()
-let videoDatabase = VideoDatabase()
- 

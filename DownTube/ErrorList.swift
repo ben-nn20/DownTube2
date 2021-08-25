@@ -27,7 +27,7 @@ struct ErrorList: View {
             }
         }
         .alert(isPresented: $errorAlertShowing, content: {
-            Alert(title: Text("Error"), message: Text(error!.domain + "\n" + (error!.localizedFailureReason ?? "")), dismissButton: nil)
+            Alert(title: Text("Error"), message: Text(error!.description + "\n" + (error!.localizedFailureReason ?? "") ), dismissButton: nil)
         })
     }
 }
