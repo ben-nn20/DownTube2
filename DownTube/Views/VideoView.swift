@@ -16,7 +16,6 @@ struct VideoView: View {
             ScrollView {
                 LazyVStack(alignment: .leading) {
                     DTVideoPlayer(video: video)
-                        .setVideo(video)
                         .cornerRadius(10)
                         .padding(.all, 8)
                         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width * 0.5625, alignment: .top)

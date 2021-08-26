@@ -16,6 +16,7 @@ class Settings: ObservableObject, Codable {
     @Published var groupChannelsIntoFolders = false
     @Published var useCellularData = true
     @Published var filterMode: FilterModes = .off
+    @Published var numberOfConcurrentDownloads = 3
     enum CodingKeys: CodingKey {
         case preferredVideoQuality
         case shouldAutoplay
@@ -24,6 +25,7 @@ class Settings: ObservableObject, Codable {
         case groupChannelsIntoFolders
         case useCellularData
         case filterMode
+        case numberOfConcurrentDownloads
     }
     static var shared = loadSettings()
     init() {}
@@ -36,6 +38,7 @@ class Settings: ObservableObject, Codable {
         groupChannelsIntoFolders = try container.decode(Bool.self, forKey: .groupChannelsIntoFolders)
         useCellularData = try container.decode(Bool.self, forKey: .useCellularData)
         filterMode = try container.decode(FilterModes.self, forKey: .filterMode)
+        numberOfConcurrentDownloads = try container.decode(Int.self, forKey: .numberOfConcurrentDownloads)
     }
     func encode(to encoder: Encoder) throws {
         var containter = encoder.container(keyedBy: CodingKeys.self)
@@ -46,6 +49,7 @@ class Settings: ObservableObject, Codable {
         try containter.encode(groupChannelsIntoFolders, forKey: .groupChannelsIntoFolders)
         try containter.encode(useCellularData, forKey: .useCellularData)
         try containter.encode(filterMode, forKey: .filterMode)
+        try containter.encode(numberOfConcurrentDownloads, forKey: .numberOfConcurrentDownloads)
     }
     static func loadSettings() -> Settings {
         let url = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0].appendingPathComponent("Settings").appendingPathExtension("plist")

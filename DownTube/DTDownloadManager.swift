@@ -22,7 +22,9 @@ class DTDownloadManager: NSObject {
     var hasDownloads: Bool {
         !(downloadingVideos.isEmpty && downloadQueue.isEmpty)
     }
-    var numberOfConcurrentDownloads = 3
+    var numberOfConcurrentDownloads: Int {
+        Settings.shared.numberOfConcurrentDownloads
+    }
     private var downloadingVideos = [DownloadTaskInfo]()
     private var downloadQueue = [DownloadURLInfo]()
     // MARK: Functions
@@ -47,7 +49,9 @@ class DTDownloadManager: NSObject {
             let videoDownloadTask = urlSession.downloadTask(with: videoURL)
             videoDownloadTask.resume()
             video.downloadProgress = videoDownloadTask.progress
-            video.downloadStatus = .downloading
+            DispatchQueue.main.async {
+                video.downloadStatus = .downloading
+            }
             downloadingVideos.append((videoDownloadTask, video))
             logs.insert(NSError(domain: "Downloading \(video.title)", code: 0, userInfo: nil), at:  0)
         } else {
@@ -73,7 +77,7 @@ class DTDownloadManager: NSObject {
             logs.insert(NSError(domain: "Cancelled \(video.title)", code: 0, userInfo: nil), at: 0)
         }
     }
-    private func getVideoFrom(task: URLSessionDownloadTask) -> Video? {
+    private func getVideoFrom(task: URLSessionTask) -> Video? {
         guard let set = downloadingVideos.first(where: { $0.videoTask === task }) else { return nil }
         return set.video
     }
@@ -95,15 +99,10 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
         }
     }
     // Handle Resume Data
-    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        if let error = error {
-            logs.insert(error, at: 0)
-        }
-    }
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let error = error {
-            logs.insert(error, at: 0)
-        }
+        guard let video = getVideoFrom(task: task), let error = error else { return }
+        video.downloadDidFailWith(error: error)
+        logs.insert(error, at: 0)
     }
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         DispatchQueue.main.async { [weak self] in

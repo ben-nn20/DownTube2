@@ -52,7 +52,6 @@ struct VideoCell: View {
             }
             Spacer()
             Text(video.timeStamp)
-                .padding()
                 .font(.system(size: 12, weight: .regular, design: .rounded))
                 .foregroundColor(.secondary)
                 

@@ -41,12 +41,13 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
                      if $0 == 0 {
                          self.playbackPositionTimer?.invalidate()
                          // if close to end reset time
-                         if videoPlayer.currentTime().seconds - self.playbackPosition < 5 {
+                         if let duration = videoPlayer.currentItem?.duration, videoPlayer.currentTime() == duration {
                              self.playbackPosition = 0
                          }
                      } else {
-                         self.playbackPositionTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true, block: {timer in
+                         self.playbackPositionTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true, block: {timer in
                              self.playbackPosition = videoPlayer.currentTime().seconds
+                             print(self.playbackPosition)
                          })
                      }
                  }
@@ -240,6 +241,8 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
                 }
                 if let parentFolder = parentFolder {
                     parentFolder.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
+                } else {
+                    VideoDatabase.shared.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
                 }
             }
         }

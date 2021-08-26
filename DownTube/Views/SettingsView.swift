@@ -59,6 +59,19 @@ struct SettingsView: View {
                 } header: {
                     Text("Network")
                 }
+                // download settings
+                Section {
+                    HStack {
+                        Stepper("Number Of Concurrent Downloads", value: $settings.numberOfConcurrentDownloads, in: 1 ... 10, step: 1)
+                        Text(String(settings.numberOfConcurrentDownloads))
+                    }
+                } header: {
+                    Text("Downloads")
+                } footer: {
+                    Text("""
+                    Youtube streams are throttled thus a video is inherently limited by how fast it can download. To make use of unused networks resources, videos can be downloaded concurrently. For faster networks, increase the number of concurrent downloads. For slower networks, decrease it. The default is three.
+                    """)
+                }
 
                 // storage management
                 Section(header: Text("Storage")) {
