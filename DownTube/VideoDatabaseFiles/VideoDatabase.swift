@@ -7,9 +7,11 @@
 
 import Combine
 import Foundation
+let kROOTFolder = "1234567890"
 class VideoDatabase: ObservableObject {
     private init() {
         self.videoFolders = Self.loadVideos()
+        print(videoFolders.count)
     }
     static var example: VideoDatabase = { () -> VideoDatabase in
         let videos = VideoDatabase()
@@ -17,7 +19,7 @@ class VideoDatabase: ObservableObject {
         return videos
     }()
     static let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("videos").appendingPathExtension("plist")
-    @Published var videoFolders: [VideoFolder] {
+    @Published dynamic var videoFolders: [VideoFolder] {
         didSet {
             Self.saveVideos()
         }
@@ -76,6 +78,15 @@ class VideoDatabase: ObservableObject {
             }
         }
     }
+    var allFolders: [Folder] {
+        let folders = folders
+        var folders2 = [Folder]()
+        folders.forEach {
+            folders2.append(contentsOf: $0.allFolders)
+        }
+        folders2.append(contentsOf: folders)
+        return folders2
+    }
     var folders: [Folder] {
         videoFolders.compactMap {
             $0.folder
@@ -116,6 +127,106 @@ class VideoDatabase: ObservableObject {
         }
         return folders
     }
+    func add(_ vid: Video? = nil,_ folder: Folder? = nil) {
+        if let vid = vid {
+            videoFolders.insert(VideoFolder(video: vid), at: 0)
+        }
+        if let folder = folder {
+            videoFolders.insert(VideoFolder(video: nil, folder: folder), at: 0)
+        }
+    }
+    func remove(_ vid: Video? = nil, _ folder: Folder? = nil) {
+        if let vid = vid {
+            self.videoFolders.removeAll {
+                $0.video === vid
+            }
+        }
+        if let folder = folder {
+            self.videoFolders.removeAll {
+                $0.folder === folder
+            }
+        }
+    }
+    // MARK: UIKit Functions
+    func videoFolders(_ filteredBy: FilterModes) -> [VideoFolder] {
+        // make folders and videos and videoFolder
+        let folders = folders
+        let videos = videoFolders.compactMap {
+            // getting videos
+            $0.video
+        }
+        // handle channel folders
+        let vF: [VideoFolder]
+        switch filteredBy {
+        case .dateAdded:
+            // filtered folders
+            let vfFolders = folders.sorted {
+                $0.dateCreated > $1.dateCreated
+            }.map {
+                VideoFolder(video: nil, folder: $0)
+            }
+            // filtered videos
+            let vfVideos = videos.sorted {
+                $0.downloadDate > $1.downloadDate
+            }.map {
+                VideoFolder(video: $0, folder: nil)
+            }
+            // result
+            vF = vfFolders + vfVideos
+        case .datePublished:
+            // filtered folders
+            let vfFolders = folders.sorted {
+                $0.dateCreated > $1.dateCreated
+            }.map {
+                VideoFolder(video: nil, folder: $0)
+            }
+            // filtered videos
+            let vfVideos = videos.sorted {
+                $0.uploadDate > $1.uploadDate
+            }.map {
+                VideoFolder(video: $0, folder: nil)
+            }
+            // result
+            vF = vfFolders + vfVideos
+        case .off:
+            vF = folders.map {
+                VideoFolder(video: nil, folder: $0)
+            } + videos.map {
+                VideoFolder(video: $0, folder: nil)
+            }
+        case .lastOpened:
+            // filtered folders
+            let vfFolders = folders.sorted {
+                $0.dateCreated > $1.dateCreated
+            }.map {
+                VideoFolder(video: nil, folder: $0)
+            }
+            // filtered videos
+            let vfVideos = videos.sorted {
+                $0.lastOpened > $1.lastOpened
+            }.map {
+                VideoFolder(video: $0, folder: nil)
+            }
+            // result
+            vF = vfFolders + vfVideos
+        case .name:
+            // filtered folders
+            let vfFolders = folders.sorted {
+                $0.name.lowercased() < $1.name.lowercased()
+            }.map {
+                VideoFolder(video: nil, folder: $0)
+            }
+            // filtered videos
+            let vfVideos = videos.sorted {
+                $0.title.lowercased() < $1.title.lowercased()
+            }.map {
+                VideoFolder(video: $0, folder: nil)
+            }
+            // result
+            vF = vfFolders + vfVideos
+        }
+        return vF
+    }
     private static func loadVideos() -> [VideoFolder] {
         let plistDecoder = PropertyListDecoder()
         do {
@@ -145,13 +256,13 @@ class VideoDatabase: ObservableObject {
         }
     }
 }
-class VideoFolder: Codable, ObservableObject, Identifiable {
+class VideoFolder: Codable, Identifiable {
     init(video: Video? = nil, folder: Folder? = nil) {
         self.video = video
         self.folder = folder
     }
-    @Published var video: Video?
-    @Published var folder: Folder?
+    var video: Video?
+    var folder: Folder?
     enum CodingKeys: CodingKey {
         case video
         case folder

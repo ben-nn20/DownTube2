@@ -32,3 +32,8 @@ enum DownloadStatus: String, Codable {
     case downloaded
     case exporting
 }
+enum MediaPlayerButtonType {
+    case playPause
+    case skipForward
+    case skipBack
+}

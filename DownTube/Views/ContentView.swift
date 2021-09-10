@@ -30,36 +30,9 @@ struct ContentView: View {
                     }
                                             .onLongPressGesture {
                         errorViewIsShowing = true
-                    }
-                                        
-                                        
-                                        , trailing: EditButton()
+                    }, trailing: EditButton()
                                             .foregroundColor(.blue))
-                    .overlay(VStack {
-                        ForEach(1 ..< 8) { _ in
-                            Spacer()
-                        }
-                        HStack {
-                            ForEach(1 ..< 9) { _ in
-                                Spacer()
-                            }
-                            Button(action: {
-                                addButtonIsShowing.toggle()
-                            }, label: {
-                                Image(systemName: "plus")
-                                    .resizable()
-                                    .padding(14)
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50, alignment: .center)
-                                    .background(Circle())
-                            })
-                                .shadow(radius: 5)
-                                .foregroundColor(.red)
-                            Spacer()
-                        }
-                        Spacer()
-                    }
-                    )
+                    .overlay(AddButton(hasBeenTapped: $addButtonIsShowing))
             }
             .accentColor(.blue)
             .fullScreenCover(isPresented: $settingsShowing) {
@@ -71,6 +44,10 @@ struct ContentView: View {
             })
             .sheet(isPresented: $addButtonIsShowing) {
                 InputView()
+            }
+            .sheet(item: $systemContext.showVideo, onDismiss: nil) { video in
+                VideoView(isSheet: true)
+                    .environmentObject(video)
             }
         }
     }

@@ -10,6 +10,7 @@ import SwiftUI
 struct ErrorList: View {
     @State var errorAlertShowing = false
     @State var error: NSError?
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         List {
             
@@ -24,6 +25,11 @@ struct ErrorList: View {
                 }
             } else {
                 EmptyView()
+            }
+        }
+        .toolbar {
+            Button("Done") {
+                dismiss()
             }
         }
         .alert(isPresented: $errorAlertShowing, content: {

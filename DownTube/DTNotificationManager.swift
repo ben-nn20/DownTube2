@@ -17,7 +17,7 @@ class DTNotificationManager {
             allowed = granted
         }
     }
-    func sendNotification(title: String, message: String, identifier: String = "DownloadNotif", thumbnailImage: URL?) {
+    func sendNotification(title: String, message: String, identifier: String = "notif", thumbnailImage: URL?) {
         let notif = UNMutableNotificationContent()
         notif.body = message
         notif.title = title
@@ -27,6 +27,11 @@ class DTNotificationManager {
         }
         
         let request = UNNotificationRequest(identifier: identifier, content: notif, trigger: nil)
-        unCenter.add(request, withCompletionHandler: nil)
+        unCenter.add(request) {
+            error in
+            if let error = error {
+                logs.insert(error, at: 0)
+            }
+        }
     }
 }

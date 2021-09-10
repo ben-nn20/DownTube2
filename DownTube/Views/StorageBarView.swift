@@ -44,33 +44,42 @@ struct StorageBarView: View {
         red = red > 255 ? 255 : red
         green = green > 255 ? 155 : green
         blue = blue > 255 ? 55 : blue
-        return Color(.sRGB, red: red, green: green, blue: blue, opacity: 1)
+        return Color(.sRGB, red: red, green: green, blue: blue, opacity: 0.5)
     }
     var body: some View {
         VStack {
             // bar
-            ZStack {
+            VStack {
+                Spacer()
                 RoundedRectangle(cornerRadius: 5)
-                    .frame(width: UIScreen.main.bounds.width - 32, height: 20, alignment: .center)
-                    .foregroundColor(.secondary)
-                HStack(alignment: .center, spacing: nil) {
-                    if storageView == .channels {
-                        ForEach(videoDatabase.channelFolders) { folder in
-                            StorageRectangeView(size: folder.fileSize, parentBarWidth: UIScreen.main.bounds.width - 32, totalDiskSpace: totalSpace, color: computeColorFor(folder))
-                        }
-                    } else {
-                        ForEach(videoDatabase.folders) { folder in
-                            StorageRectangeView(size: folder.fileSize, parentBarWidth: UIScreen.main.bounds.width - 32, totalDiskSpace: totalSpace, color: computeColorFor(folder))
-                        }
-                    }
-                    Spacer()
-                }
-                // key for colors
-                
+                        .frame(width: UIScreen.main.bounds.width - 32, height: 40, alignment: .center)
+                        .border(Color.black)
+                        .foregroundColor(.secondary)
+                        .overlay(
+                            HStack(spacing: 0) {
+                                if storageView == .channels {
+                                    ForEach(videoDatabase.channelFolders) { folder in
+                                        StorageRectangeView(size: folder.fileSize, parentBarWidth: UIScreen.main.bounds.width - 32, totalDiskSpace: totalSpace, color: computeColorFor(folder))
+                                    }
+                                } else {
+                                    ForEach(videoDatabase.folders) { folder in
+                                        StorageRectangeView(size: folder.fileSize, parentBarWidth: UIScreen.main.bounds.width - 32, totalDiskSpace: totalSpace, color: computeColorFor(folder))
+                                    }
+                                }
+                                Spacer()
+                            }
+                    )
+                // key
+            }
+            .background(RoundedRectangle(cornerRadius: 10)
+                            .foregroundColor(.white)
+                            .frame(height: 200)
+                            .padding([.leading, .trailing], 8))
                 // Control selector for view type
                 HStack {
                     
                 }
+                .padding(.bottom, 30)
                 if storageView == .channels {
                     List(videoDatabase.channelFolders) { folder in
                         FolderCell(shouldShowFileSize: true)
@@ -90,7 +99,7 @@ struct StorageBarView: View {
             }
         }
     }
-}
+
 
 struct StorageBarView_Previews: PreviewProvider {
     static var previews: some View {

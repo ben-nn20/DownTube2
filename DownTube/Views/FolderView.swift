@@ -6,17 +6,23 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct FolderView: View {
     @EnvironmentObject var folder: Folder
     @StateObject var settings = Settings.shared
     @Environment(\.editMode) var editMode
+    @State var popupIsShowing = false
+    @State var inputViewIsShowing = false
+    @State var selectionViewIsShowing = false
     @State var videoSelection = Set<ObjectIdentifier>()
     @State var shouldDeleteItems = Set<ObjectIdentifier>()
     @State var searchText = ""
     @State var filterText = Settings.shared.filterMode.rawValue
     @State var shouldDelete = false
     @State var attemptingToDeleteFolders = false
+    @State var addVideosSelection = Set<ObjectIdentifier>()
+    @State var selectAllButtonText = "Select All"
     //MARK: Computed Properties
     var searchedVideos: [Video] {
         folder.videoFolders
@@ -101,6 +107,7 @@ struct FolderView: View {
                         folder.videoFolders.append(VideoFolder(video: nil, folder: Folder(videoFolders: videoFolders, name: "Untitled")))
                     } label: {
                         Image(systemName: "folder.badge.plus")
+                            .font(.system(size: 15))
                             .padding()
                     }
                     Spacer()
@@ -110,17 +117,26 @@ struct FolderView: View {
                         }
                     } label: {
                         Image(systemName: "trash")
+                            .font(.system(size: 15))
                             .padding()
                     }
                     Spacer()
                 }
-                .animation(Animation.interactiveSpring(), value: isEditing)
             }
-            .navigationBarItems(leading: Button("Select All") {
-                videoSelection = Set(folder.videoFolders.map {
+            .navigationBarItems(leading: Button(selectAllButtonText) {
+                let allSelections = Set(folder.videoFolders.map {
                     $0.id
                 })
-            })
+                if videoSelection == allSelections {
+                    videoSelection = []
+                    selectAllButtonText = "Select All"
+                } else {
+                    videoSelection = allSelections
+                    selectAllButtonText = "Deselect All"
+                }
+            }, trailing: EditButton()
+                                    .foregroundColor(.blue))
+            .listStyle(PlainListStyle())
             .alert(isPresented: $shouldDelete) {
                 let videoFolders = folder.videoFolders.filter {
                     shouldDeleteItems.contains($0.id)
@@ -183,26 +199,50 @@ struct FolderView: View {
                 //MARK: VideoList
                 if searchText == "" {
                     // Show folder or video respectively
-                    ForEach(filteredFolders) { folder in
-                        NavigationLink(
-                            destination: FolderView()
-                                .environmentObject(folder),
-                            label: {
-                                FolderCell()
-                                    .environmentObject(folder)
-                            })
+                    if popupIsShowing {
+                        ForEach(filteredFolders) { folder in
+                            NavigationLink(
+                                destination: FolderView()
+                                    .environmentObject(folder),
+                                label: {
+                                    FolderCell()
+                                        .environmentObject(folder)
+                                })
+                        }
+                        .onInsert(of: [UTType.plainText], perform: drop)
+                        ForEach(filteredVideos) { video in
+                            NavigationLink(
+                                destination: VideoView()
+                                    .environmentObject(video),
+                                label: {
+                                    VideoCell()
+                                        .environmentObject(video)
+                                })
+                        }
+                        .onInsert(of: [UTType.plainText], perform: drop)
+                        
+                    } else {
+                        ForEach(filteredFolders) { folder in
+                            NavigationLink(
+                                destination: FolderView()
+                                    .environmentObject(folder),
+                                label: {
+                                    FolderCell()
+                                        .environmentObject(folder)
+                                })
+                        }
+                        .onInsert(of: [UTType.plainText], perform: drop)
+                        ForEach(filteredVideos) { video in
+                            NavigationLink(
+                                destination: VideoView()
+                                    .environmentObject(video),
+                                label: {
+                                    VideoCell()
+                                        .environmentObject(video)
+                                })
+                        }
+                        .onInsert(of: [UTType.plainText], perform: drop)
                     }
-                    ForEach(filteredVideos) { video in
-                        NavigationLink(
-                            destination: VideoView()
-                                .environmentObject(video),
-                            label: {
-                                VideoCell()
-                                    .environmentObject(video)
-                            })
-                    }
-                    
-                    
                 } else {
                     //MARK: Searching List
                     ForEach(searchedFolders) { folder in
@@ -221,43 +261,71 @@ struct FolderView: View {
                             label: {
                                 VideoCell()
                                     .environmentObject(video)
-                            })
+                        })
                     }
                 }
             }
+            .overlay(AddButton() {
+                popupIsShowing.toggle()
+            })
             .searchable(text: $searchText)
             .navigationTitle(folder.name)
-            .toolbar {
-                ToolbarItemGroup {
-                    Button {
-                        // handle filtering modes
-                        let allCases = FilterModes.allCases
-                        let index = allCases.firstIndex(of: settings.filterMode)!
-                        if index == allCases.count - 1 {
-                            settings.filterMode = allCases[0]
-                        } else {
-                            settings.filterMode = allCases[index + 1]
-                        }
-                        filterText = settings.filterMode.rawValue
-                    } label: {
-                        HStack {
-                            Text(filterText)
-                            if settings.filterMode == .off {
-                                Image(systemName: "line.horizontal.3.decrease.circle")
-                                    .foregroundColor(.blue)
-                            } else {
-                                Image(systemName: "line.horizontal.3.decrease.circle.fill")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                    }
-                    .toolbar {
-                        EditButton()
+            .navigationBarItems(leading: Button {
+                // handle filtering modes
+                let allCases = FilterModes.allCases
+                let index = allCases.firstIndex(of: settings.filterMode)!
+                if index == allCases.count - 1 {
+                    settings.filterMode = allCases[0]
+                } else {
+                    settings.filterMode = allCases[index + 1]
+                }
+                filterText = settings.filterMode.rawValue
+            } label: {
+                HStack {
+                    Text(filterText)
+                        .foregroundColor(.blue)
+                    if settings.filterMode == .off {
+                        Image(systemName: "line.horizontal.3.decrease.circle")
+                            .foregroundColor(.blue)
+                    } else {
+                        Image(systemName: "line.horizontal.3.decrease.circle.fill")
+                            .foregroundColor(.blue)
                     }
                 }
+            }, trailing: EditButton()
+                                    .foregroundColor(.blue))
+            .sheet(isPresented: $inputViewIsShowing) {
+                popupIsShowing = false
+            } content: {
+               InputView(parentFolderId: folder.id)
+            }
+            .sheet(isPresented: $selectionViewIsShowing) {
+                popupIsShowing = false
+                let videos = VideoDatabase.shared.allVideos
+                let videoFolders = videos.filter {
+                    addVideosSelection.contains($0.id)
+                }.map {
+                    VideoFolder(video: $0, folder: nil)
+                }
+                folder.videoFolders.append(contentsOf: videoFolders)
+            } content: {
+                   SelectionView()
             }
             .listStyle(PlainListStyle())
         }
+    }
+    private func drop(at index: Int, _ items: [NSItemProvider]) {
+           for item in items {
+               _ = item.loadObject(ofClass: NSString.self) { vidID, _ in
+                   DispatchQueue.main.async {
+                       let video = VideoDatabase.shared.allVideos.first {
+                           $0.videoId == vidID as! String
+                       }
+                       VideoDatabase.shared.remove(video)
+                       folder.add(index, video)
+                   }
+               }
+           }
     }
 }
     struct FolderView_Previews: PreviewProvider {

@@ -25,7 +25,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     var videoDescription: String
     var playbackPosition = 0.0
     var lastOpened = Date()
-    var parentFolder: Folder?
+    var parentFolderId = kROOTFolder
     var playbackPositionTimer: Timer?
     var playerIsPlayingPublisher: AnyCancellable?
     var downloadProgress = Progress()
@@ -36,8 +36,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     var avPlayer: AVPlayer {
             let videoPlayer = AVPlayer(url: videoUrl)
             if Settings.shared.savePlaybackPosition {
-                playerIsPlayingPublisher = videoPlayer.publisher(for: \.rate).sink { [weak self] in
-                    guard let self = self else {return}
+                playerIsPlayingPublisher = videoPlayer.publisher(for: \.rate).sink { [self] in
                      if $0 == 0 {
                          self.playbackPositionTimer?.invalidate()
                          // if close to end reset time
@@ -66,14 +65,14 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         try? Data(contentsOf: thumbnailUrl)
     }
     var videoSize: String {
+        ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+    }
+    var fileSize: Int64 {
         do {
-            let byteCount = (try FileManager.default.attributesOfItem(atPath: videoUrl.path) as NSDictionary).fileSize()
-            return ByteCountFormatter.string(fromByteCount: Int64(byteCount), countStyle: .file)
+            return Int64((try FileManager.default.attributesOfItem(atPath: videoUrl.path) as NSDictionary).fileSize())
         } catch {
-            logs.insert(error, at: 0)
-            return ""
+            return 0
         }
-        
     }
     var timeStamp: String {
         guard let duration = duration else {
@@ -119,12 +118,13 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     func delete() {
             try? FileManager.default.removeItem(at: videoUrl)
             try? FileManager.default.removeItem(at: thumbnailUrl)
-        if let parentFolder = parentFolder {
-            parentFolder.videoFolders.removeAll {
+        if parentFolderId == kROOTFolder {
+            VideoDatabase.shared.videoFolders.removeAll {
                 $0.video === self
             }
         } else {
-            VideoDatabase.shared.videoFolders.removeAll {
+            let parentFolder = Folder.folderFrom(parentFolderId)
+            parentFolder.videoFolders.removeAll {
                 $0.video === self
             }
         }
@@ -135,7 +135,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     
     func reDownload() {
         delete()
-        Video.video(fromVideoId: videoId, parentFolder: parentFolder)
+        Video.video(fromVideoId: videoId, parentFolderId: parentFolderId)
     }
     
     func videoFinishedDownloading(_ video: URL) {
@@ -182,7 +182,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         case videoDescription
         case playbackPosition
         case lastOpened
-        case parentFolder
+        case parentFolderId
     }
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -198,7 +198,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         try container.encode(videoId, forKey: .videoId)
         try container.encode(playbackPosition, forKey: .playbackPosition)
         try container.encode(lastOpened, forKey: .lastOpened)
-        try container.encode(parentFolder, forKey: .parentFolder)
+        try container.encode(parentFolderId, forKey: .parentFolderId)
     }
     // MARK: Initializers
     required init(from decoder: Decoder) throws {
@@ -215,8 +215,12 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         playbackPosition = try values.decode(Double.self, forKey: .playbackPosition)
         isDownloaded = try values.decode(Bool.self, forKey: .isDownloaded)
         lastOpened = try values.decode(Date.self, forKey: .lastOpened)
-        parentFolder = try values.decode(Folder?.self, forKey: .parentFolder)
+        parentFolderId = try values.decode(String.self, forKey: .parentFolderId)
         super.init()
+        if hasVideo {
+            downloadStatus = .downloaded
+            isDownloaded = true
+        }
         if imageData == nil {
             var thumbReq = URLRequest(url: URL(string: "https://i.ytimg.com/vi/\(videoId)/sddefault.jpg")!)
             thumbReq.allowsCellularAccess = Settings.shared.useCellularData
@@ -229,20 +233,21 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
             }.resume()
         }
     }
-    static func video(fromVideoId: String, parentFolder: Folder? = nil) {
+    static func video(fromVideoId: String, parentFolderId: String = kROOTFolder) {
         var youtubeFormatter = YoutubeAPIParser(fromVideoId)
         youtubeFormatter.format { (videoInfo) in
             DispatchQueue.main.async {
                 guard let youtubeInfo = videoInfo else { return }
-                let video = Video(youtubeInfo: youtubeInfo, parentFolder: parentFolder)
+                let video = Video(youtubeInfo: youtubeInfo, parentFolderId: parentFolderId)
                 guard let unwrappedVideo = video else {
                     logs.insert(NSError(domain: "Video init failed", code: 0, userInfo: nil), at: 0)
                     return
                 }
-                if let parentFolder = parentFolder {
-                    parentFolder.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
-                } else {
+                if parentFolderId == kROOTFolder {
                     VideoDatabase.shared.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
+                } else {
+                    let parentFolder = Folder.folderFrom(parentFolderId)
+                    parentFolder.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
                 }
             }
         }
@@ -265,14 +270,16 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
             }
         }
     }
-    private init?(youtubeInfo: VideoInfo, parentFolder: Folder?) {
-        self.parentFolder = parentFolder
-        self.videoId = youtubeInfo.videoDetails!.videoId!
-        let videoDetails = youtubeInfo.videoDetails
-        self.title = videoDetails!.title!.replacingOccurrences(of: "+", with: " ")
-        self.channelName = videoDetails!.author!.replacingOccurrences(of: "+", with: " ")
-        self.channelID = videoDetails!.channelId!
-        self.videoDescription = videoDetails!.shortDescription!
+    private init?(youtubeInfo: VideoInfo, parentFolderId: String?) {
+        if let parentFolderId = parentFolderId {
+            self.parentFolderId = parentFolderId
+        }
+        guard let videoDetails = youtubeInfo.videoDetails else { return nil}
+        self.videoId = videoDetails.videoId!
+        self.title = videoDetails.title!.replacingOccurrences(of: "+", with: " ")
+        self.channelName = videoDetails.author!.replacingOccurrences(of: "+", with: " ")
+        self.channelID = videoDetails.channelId!
+        self.videoDescription = videoDetails.shortDescription!
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         guard let date = dateFormatter.date(from: youtubeInfo.microformat?.playerMicroformatRenderer!.publishDate! ?? "\(dateFormatter.string(from: Date()))") else {
@@ -280,6 +287,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         }
         self.uploadDate = date
         guard let formats = youtubeInfo.streamingData!.formats else {
+            print(youtubeInfo)
             return nil
         }
         var videoFormat: VideoInfo.StreamingData.Format?

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import UniformTypeIdentifiers
+
 extension NSError: Identifiable {}
 extension Set: Identifiable {
     public var id: Int {

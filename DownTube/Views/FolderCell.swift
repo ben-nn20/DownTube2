@@ -15,6 +15,7 @@ struct FolderCell: View {
     @State var isRenaming = false
     @State var newName = ""
     @State var shouldShowFileSize = false
+    @State var isTargeted = false
     var body: some View {
         if isRenaming {
             HStack {
@@ -34,6 +35,19 @@ struct FolderCell: View {
                         Text(ByteCountFormatter.string(fromByteCount: folder.fileSize, countStyle: .file))
                     }
                 }
+            }
+            .onDrop(of: [UTType.plainText.identifier], isTargeted: $isTargeted) { providers in
+                guard let provider = providers.first(where: {
+                    $0.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
+                }) else { return false }
+                    _ = provider.loadObject(ofClass: String.self, completionHandler: { vidID, error in
+                        let video = VideoDatabase.shared.allVideos.first {
+                            $0.videoId == vidID
+                        }
+                        VideoDatabase.shared.remove(video)
+                        folder.add(0, video)
+                    })
+                return true
             }
             .contextMenu {
                 Button {
@@ -61,6 +75,7 @@ struct FolderCell: View {
                     }
                 }
             }
+            .foregroundColor(isTargeted ? .secondary : .none)
             .alert(Text("Delete Folder?"), isPresented: $shouldDelete) {
                 Button("Delete", role: .destructive) {
                     folder.delete()

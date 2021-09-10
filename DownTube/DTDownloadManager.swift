@@ -20,7 +20,11 @@ class DTDownloadManager: NSObject {
         return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
     }()
     var hasDownloads: Bool {
-        !(downloadingVideos.isEmpty && downloadQueue.isEmpty)
+        if !downloadQueue.isEmpty || !downloadingVideos.isEmpty {
+            return true
+        } else {
+            return false
+        }
     }
     var numberOfConcurrentDownloads: Int {
         Settings.shared.numberOfConcurrentDownloads

@@ -8,20 +8,31 @@
 import SwiftUI
 import AVKit
 
-struct DTVideoPlayer: UIViewControllerRepresentable {
+final class DTVideoPlayer: UIViewControllerRepresentable {
     init(video: Video? = nil) {
         self.video = video
     }
     private let videoVC = AVPlayerViewController()
     private var video: Video?
-    dynamic var isPlaying = false
+    private var playTimer: Timer?
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         
         videoVC.allowsPictureInPicturePlayback = true
         videoVC.entersFullScreenWhenPlaybackBegins = true
         videoVC.exitsFullScreenWhenPlaybackEnds = true
         videoVC.showsPlaybackControls = true
+        videoVC.updatesNowPlayingInfoCenter = false
         videoVC.player = video!.avPlayer
+        if Settings.shared.shouldAutoplay {
+            playTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [self] _ in
+                if video?.avPlayer.rate == 0 {
+                    play()
+                }
+            }
+        }
+        if AudioPlayer.shared.isPlaying {
+            AudioPlayer.shared.pause()
+        }
         return videoVC
     }
     @discardableResult func play() -> Self {

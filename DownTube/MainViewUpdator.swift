@@ -6,10 +6,9 @@
 //
 
 import Combine
- class MainViewUpdator: ObservableObject {
+class MainViewUpdator: ObservableObject {
     static var shared = MainViewUpdator()
-    
     @Published var audioIsPlaying = false
-    
+    @Published var showVideo: Video?
 }
 

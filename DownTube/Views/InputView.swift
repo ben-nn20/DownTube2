@@ -10,6 +10,7 @@ import SwiftUI
 struct InputView: View {
     @State var inputText = ""
     @State var alertIsShowing = false
+    var parentFolderId: String?
     @Environment(\.presentationMode) var presMode
     var body: some View {
         NavigationView {
@@ -41,7 +42,11 @@ struct InputView: View {
                 
                 if !VideoDatabase.shared.videos.contains(where: {  $0.videoId == str
                 }) {
-                    Video.video(fromVideoId: str)
+                    if let parentFolderId = parentFolderId {
+                        Video.video(fromVideoId: str, parentFolderId: parentFolderId)
+                    } else {
+                        Video.video(fromVideoId: str)
+                    }
                 }
             }
             .textFieldStyle(RoundedBorderTextFieldStyle())

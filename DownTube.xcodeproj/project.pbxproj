@@ -14,12 +14,29 @@
 		C1096590266E856600A85959 /* YoutubeAPIFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C109658F266E856600A85959 /* YoutubeAPIFormatter.swift */; };
 		C1096596266ED2AF00A85959 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1096595266ED2AF00A85959 /* Globals.swift */; };
 		C120A90D269E5C74000C1DBB /* FolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C120A90C269E5C74000C1DBB /* FolderView.swift */; };
+		C12872AD26DF027E00A6E294 /* VideoIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12872AC26DF027E00A6E294 /* VideoIndexer.swift */; };
+		C12872F826DF1B4F00A6E294 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12872F726DF1B4F00A6E294 /* ShareViewController.swift */; };
+		C12872FB26DF1B4F00A6E294 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C12872F926DF1B4F00A6E294 /* MainInterface.storyboard */; };
+		C12872FF26DF1B4F00A6E294 /* DownloadExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C12872F526DF1B4F00A6E294 /* DownloadExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C128730426DF1B5700A6E294 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = C128730326DF1B5700A6E294 /* SwiftSoup */; };
+		C128730526DF1B8000A6E294 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1096595266ED2AF00A85959 /* Globals.swift */; };
+		C128730626DF1B8000A6E294 /* DTNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DE0B1226940CBD003BC869 /* DTNotificationManager.swift */; };
+		C128730726DF1B8000A6E294 /* DTDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18BF4762692D8CB00FFCB96 /* DTDownloadManager.swift */; };
+		C128730826DF1B8000A6E294 /* Enumerations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A5FDBF26D5F16D00383786 /* Enumerations.swift */; };
+		C128730926DF1B8000A6E294 /* Video.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1096586266E817500A85959 /* Video.swift */; };
+		C128730A26DF1B8000A6E294 /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A5FDC926D6FAB800383786 /* Folder.swift */; };
+		C128730B26DF1B8000A6E294 /* VideoDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C106621F268A61D800A121B6 /* VideoDatabase.swift */; };
+		C128730C26DF1B8000A6E294 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BCC1A82693E00A008D0BC5 /* Settings.swift */; };
+		C128730D26DF1B8000A6E294 /* YoutubeAPIFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C109658F266E856600A85959 /* YoutubeAPIFormatter.swift */; };
+		C128730E26DF1B8000A6E294 /* YoutubeJSONTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C109658C266E852200A85959 /* YoutubeJSONTypes.swift */; };
 		C129246826BB1846005C7B0C /* DTVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C129246726BB1845005C7B0C /* DTVideoPlayer.swift */; };
 		C12F287026B9127F003C32FC /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12F286F26B9127F003C32FC /* AudioPlayer.swift */; };
 		C134407F26B395C400A16394 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = C134407E26B395C400A16394 /* SwiftSoup */; };
 		C13DBACF266ADEB9007ADD8A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13DBACE266ADEB9007ADD8A /* AppDelegate.swift */; };
 		C13DBAD8266ADEBD007ADD8A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C13DBAD7266ADEBD007ADD8A /* Assets.xcassets */; };
-		C142100326D41DE1008DC20E /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C142100226D41DE1008DC20E /* LaunchScreen.swift */; };
+		C14CF9CC26D84C9D00C60291 /* AddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CB26D84C9C00C60291 /* AddButton.swift */; };
+		C14CF9CE26D84CC600C60291 /* SelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CD26D84CC600C60291 /* SelectionView.swift */; };
+		C14CF9D026D850A200C60291 /* FolderOptionsPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */; };
 		C14EEA83268A50180075523F /* VideoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14EEA82268A50180075523F /* VideoCell.swift */; };
 		C162BF9926C244B9003C7843 /* VideoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162BF9826C244B9003C7843 /* VideoListViewController.swift */; };
 		C162BF9B26C246A9003C7843 /* VideoFolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162BF9A26C246A9003C7843 /* VideoFolderTableViewCell.swift */; };
@@ -33,6 +50,9 @@
 		C18BF47D2693AEE900FFCB96 /* DTProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18BF47C2693AEE900FFCB96 /* DTProgressView.swift */; };
 		C18FE85C26B8862E00323790 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18FE85B26B8862E00323790 /* VideoView.swift */; };
 		C18FE85E26B88B3100323790 /* Orientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18FE85D26B88B3100323790 /* Orientation.swift */; };
+		C195FAE226D9C08900DA7892 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C195FAE126D9C08900DA7892 /* BlurView.swift */; };
+		C195FAE626D9C49000DA7892 /* MediaPlayerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C195FAE526D9C49000DA7892 /* MediaPlayerButton.swift */; };
+		C195FAE826DD8EFF00DA7892 /* DTTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C195FAE726DD8EFF00DA7892 /* DTTextView.swift */; };
 		C1A5FDBC26D5D6D200383786 /* StorageManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A5FDBB26D5D6D200383786 /* StorageManagementView.swift */; };
 		C1A5FDBE26D5D75600383786 /* StorageBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A5FDBD26D5D75600383786 /* StorageBarView.swift */; };
 		C1A5FDC026D5F16D00383786 /* Enumerations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A5FDBF26D5F16D00383786 /* Enumerations.swift */; };
@@ -46,6 +66,16 @@
 		C1DE0B1326940CBD003BC869 /* DTNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DE0B1226940CBD003BC869 /* DTNotificationManager.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		C12872FD26DF1B4F00A6E294 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C13DBAC3266ADEB9007ADD8A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C12872F426DF1B4F00A6E294;
+			remoteInfo = DownloadExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		C1746247267BC27F002A3757 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -53,6 +83,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				C12872FF26DF1B4F00A6E294 /* DownloadExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -67,13 +98,20 @@
 		C109658F266E856600A85959 /* YoutubeAPIFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutubeAPIFormatter.swift; sourceTree = "<group>"; };
 		C1096595266ED2AF00A85959 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		C120A90C269E5C74000C1DBB /* FolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderView.swift; sourceTree = "<group>"; };
+		C12872AC26DF027E00A6E294 /* VideoIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoIndexer.swift; sourceTree = "<group>"; };
+		C12872F526DF1B4F00A6E294 /* DownloadExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DownloadExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C12872F726DF1B4F00A6E294 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		C12872FA26DF1B4F00A6E294 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
+		C12872FC26DF1B4F00A6E294 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C129246726BB1845005C7B0C /* DTVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTVideoPlayer.swift; sourceTree = "<group>"; };
 		C12F286F26B9127F003C32FC /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		C13DBACB266ADEB9007ADD8A /* DownTube.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownTube.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C13DBACE266ADEB9007ADD8A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C13DBAD7266ADEBD007ADD8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C13DBADC266ADEBD007ADD8A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C142100226D41DE1008DC20E /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
+		C14CF9CB26D84C9C00C60291 /* AddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddButton.swift; sourceTree = "<group>"; };
+		C14CF9CD26D84CC600C60291 /* SelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionView.swift; sourceTree = "<group>"; };
+		C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderOptionsPopup.swift; sourceTree = "<group>"; };
 		C14EEA82268A50180075523F /* VideoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCell.swift; sourceTree = "<group>"; };
 		C162BF9826C244B9003C7843 /* VideoListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoListViewController.swift; sourceTree = "<group>"; };
 		C162BF9A26C246A9003C7843 /* VideoFolderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoFolderTableViewCell.swift; sourceTree = "<group>"; };
@@ -89,6 +127,10 @@
 		C18BF47C2693AEE900FFCB96 /* DTProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTProgressView.swift; sourceTree = "<group>"; };
 		C18FE85B26B8862E00323790 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		C18FE85D26B88B3100323790 /* Orientation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Orientation.swift; sourceTree = "<group>"; };
+		C195FAE126D9C08900DA7892 /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
+		C195FAE526D9C49000DA7892 /* MediaPlayerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerButton.swift; sourceTree = "<group>"; };
+		C195FAE726DD8EFF00DA7892 /* DTTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTTextView.swift; sourceTree = "<group>"; };
+		C195FB1226DEFB1200DA7892 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		C1A5FDBB26D5D6D200383786 /* StorageManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManagementView.swift; sourceTree = "<group>"; };
 		C1A5FDBD26D5D75600383786 /* StorageBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageBarView.swift; sourceTree = "<group>"; };
 		C1A5FDBF26D5F16D00383786 /* Enumerations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enumerations.swift; sourceTree = "<group>"; };
@@ -103,6 +145,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		C12872F226DF1B4F00A6E294 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C128730426DF1B5700A6E294 /* SwiftSoup in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C13DBAC8266ADEB9007ADD8A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -114,10 +164,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C12872F626DF1B4F00A6E294 /* DownloadExtension */ = {
+			isa = PBXGroup;
+			children = (
+				C12872F726DF1B4F00A6E294 /* ShareViewController.swift */,
+				C12872F926DF1B4F00A6E294 /* MainInterface.storyboard */,
+				C12872FC26DF1B4F00A6E294 /* Info.plist */,
+			);
+			path = DownloadExtension;
+			sourceTree = "<group>";
+		};
 		C13DBAC2266ADEB9007ADD8A = {
 			isa = PBXGroup;
 			children = (
 				C13DBACD266ADEB9007ADD8A /* DownTube */,
+				C12872F626DF1B4F00A6E294 /* DownloadExtension */,
 				C13DBACC266ADEB9007ADD8A /* Products */,
 				C162BF9C26C5A28F003C7843 /* Frameworks */,
 			);
@@ -127,6 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				C13DBACB266ADEB9007ADD8A /* DownTube.app */,
+				C12872F526DF1B4F00A6E294 /* DownloadExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -135,11 +197,11 @@
 			isa = PBXGroup;
 			children = (
 				C13DBACE266ADEB9007ADD8A /* AppDelegate.swift */,
+				C12872AC26DF027E00A6E294 /* VideoIndexer.swift */,
 				C1096595266ED2AF00A85959 /* Globals.swift */,
 				C1884DD826BCDDF50054BBD3 /* MainViewUpdator.swift */,
 				C18FE85D26B88B3100323790 /* Orientation.swift */,
 				C12F286F26B9127F003C32FC /* AudioPlayer.swift */,
-				C18BF47C2693AEE900FFCB96 /* DTProgressView.swift */,
 				C1DE0B1226940CBD003BC869 /* DTNotificationManager.swift */,
 				C18BF4782693A79D00FFCB96 /* ErrorList.swift */,
 				C18BF47A2693A8B800FFCB96 /* Extensions.swift */,
@@ -148,7 +210,7 @@
 				C142100126D41687008DC20E /* Views */,
 				C1B4F61C26D074B90045F0B1 /* VideoDatabaseFiles */,
 				C1B4F61B26D0748F0045F0B1 /* YoutubeFormatingFiles */,
-				C162BF9726C24480003C7843 /* UIKIt */,
+				C162BF9726C24480003C7843 /* UIKit */,
 				C13DBAD7266ADEBD007ADD8A /* Assets.xcassets */,
 				C13DBADC266ADEBD007ADD8A /* Info.plist */,
 				C1A5FDC726D6F83A00383786 /* Launch Screen.storyboard */,
@@ -159,15 +221,21 @@
 		C142100126D41687008DC20E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C142100226D41DE1008DC20E /* LaunchScreen.swift */,
+				C195FAE126D9C08900DA7892 /* BlurView.swift */,
 				C106621C268A617400A121B6 /* ContentView.swift */,
 				C1784191268ED4210009BFF1 /* InputView.swift */,
 				C1884DDD26BCE1170054BBD3 /* AudioPlayerView.swift */,
+				C195FAE526D9C49000DA7892 /* MediaPlayerButton.swift */,
 				C18FE85B26B8862E00323790 /* VideoView.swift */,
+				C18BF47C2693AEE900FFCB96 /* DTProgressView.swift */,
 				C129246726BB1845005C7B0C /* DTVideoPlayer.swift */,
+				C195FAE726DD8EFF00DA7892 /* DTTextView.swift */,
 				C17B036026BCF44E005D990A /* VideoList.swift */,
 				C14EEA82268A50180075523F /* VideoCell.swift */,
 				C120A90C269E5C74000C1DBB /* FolderView.swift */,
+				C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */,
+				C14CF9CB26D84C9C00C60291 /* AddButton.swift */,
+				C14CF9CD26D84CC600C60291 /* SelectionView.swift */,
 				C1B4F61526D01AC40045F0B1 /* FolderCell.swift */,
 				C1A5FDBB26D5D6D200383786 /* StorageManagementView.swift */,
 				C1A5FDBD26D5D75600383786 /* StorageBarView.swift */,
@@ -177,14 +245,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		C162BF9726C24480003C7843 /* UIKIt */ = {
+		C162BF9726C24480003C7843 /* UIKit */ = {
 			isa = PBXGroup;
 			children = (
 				C162BF9826C244B9003C7843 /* VideoListViewController.swift */,
 				C162BF9A26C246A9003C7843 /* VideoFolderTableViewCell.swift */,
 				C1A5FDC326D6E4BB00383786 /* LaunchScreenViewController.swift */,
 			);
-			path = UIKIt;
+			path = UIKit;
 			sourceTree = "<group>";
 		};
 		C162BF9C26C5A28F003C7843 /* Frameworks */ = {
@@ -192,6 +260,7 @@
 			children = (
 				C162BF9F26C5A311003C7843 /* SwiftUI.framework */,
 				C162BF9D26C5A28F003C7843 /* AVFoundation.framework */,
+				C195FB1226DEFB1200DA7892 /* UniformTypeIdentifiers.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -219,6 +288,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C12872F426DF1B4F00A6E294 /* DownloadExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C128730026DF1B4F00A6E294 /* Build configuration list for PBXNativeTarget "DownloadExtension" */;
+			buildPhases = (
+				C12872F126DF1B4F00A6E294 /* Sources */,
+				C12872F226DF1B4F00A6E294 /* Frameworks */,
+				C12872F326DF1B4F00A6E294 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DownloadExtension;
+			packageProductDependencies = (
+				C128730326DF1B5700A6E294 /* SwiftSoup */,
+			);
+			productName = DownloadExtension;
+			productReference = C12872F526DF1B4F00A6E294 /* DownloadExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		C13DBACA266ADEB9007ADD8A /* DownTube */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C13DBADF266ADEBD007ADD8A /* Build configuration list for PBXNativeTarget "DownTube" */;
@@ -231,6 +320,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				C12872FE26DF1B4F00A6E294 /* PBXTargetDependency */,
 			);
 			name = DownTube;
 			packageProductDependencies = (
@@ -246,9 +336,12 @@
 		C13DBAC3266ADEB9007ADD8A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1210;
+				LastSwiftUpdateCheck = 1300;
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
+					C12872F426DF1B4F00A6E294 = {
+						CreatedOnToolsVersion = 13.0;
+					};
 					C13DBACA266ADEB9007ADD8A = {
 						CreatedOnToolsVersion = 12.1;
 					};
@@ -271,11 +364,20 @@
 			projectRoot = "";
 			targets = (
 				C13DBACA266ADEB9007ADD8A /* DownTube */,
+				C12872F426DF1B4F00A6E294 /* DownloadExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		C12872F326DF1B4F00A6E294 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C12872FB26DF1B4F00A6E294 /* MainInterface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C13DBAC9266ADEB9007ADD8A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -288,19 +390,40 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C12872F126DF1B4F00A6E294 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C128730526DF1B8000A6E294 /* Globals.swift in Sources */,
+				C128730626DF1B8000A6E294 /* DTNotificationManager.swift in Sources */,
+				C128730726DF1B8000A6E294 /* DTDownloadManager.swift in Sources */,
+				C128730826DF1B8000A6E294 /* Enumerations.swift in Sources */,
+				C128730926DF1B8000A6E294 /* Video.swift in Sources */,
+				C128730A26DF1B8000A6E294 /* Folder.swift in Sources */,
+				C128730B26DF1B8000A6E294 /* VideoDatabase.swift in Sources */,
+				C128730C26DF1B8000A6E294 /* Settings.swift in Sources */,
+				C128730D26DF1B8000A6E294 /* YoutubeAPIFormatter.swift in Sources */,
+				C128730E26DF1B8000A6E294 /* YoutubeJSONTypes.swift in Sources */,
+				C12872F826DF1B4F00A6E294 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C13DBAC7266ADEB9007ADD8A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C1BCC1A92693E00A008D0BC5 /* Settings.swift in Sources */,
 				C1A5FDCA26D6FABA00383786 /* Folder.swift in Sources */,
+				C14CF9D026D850A200C60291 /* FolderOptionsPopup.swift in Sources */,
 				C18BF4792693A79D00FFCB96 /* ErrorList.swift in Sources */,
-				C142100326D41DE1008DC20E /* LaunchScreen.swift in Sources */,
 				C162BF9B26C246A9003C7843 /* VideoFolderTableViewCell.swift in Sources */,
 				C1A5FDC426D6E4BB00383786 /* LaunchScreenViewController.swift in Sources */,
+				C12872AD26DF027E00A6E294 /* VideoIndexer.swift in Sources */,
 				C1884DD926BCDDF50054BBD3 /* MainViewUpdator.swift in Sources */,
 				C106621D268A617400A121B6 /* ContentView.swift in Sources */,
+				C14CF9CC26D84C9D00C60291 /* AddButton.swift in Sources */,
 				C18BF4772692D8CB00FFCB96 /* DTDownloadManager.swift in Sources */,
+				C195FAE826DD8EFF00DA7892 /* DTTextView.swift in Sources */,
 				C1A5FDBE26D5D75600383786 /* StorageBarView.swift in Sources */,
 				C12F287026B9127F003C32FC /* AudioPlayer.swift in Sources */,
 				C109658D266E852200A85959 /* YoutubeJSONTypes.swift in Sources */,
@@ -314,6 +437,7 @@
 				C18FE85E26B88B3100323790 /* Orientation.swift in Sources */,
 				C13DBACF266ADEB9007ADD8A /* AppDelegate.swift in Sources */,
 				C1A5FDC226D6031F00383786 /* StorageRectangeView.swift in Sources */,
+				C14CF9CE26D84CC600C60291 /* SelectionView.swift in Sources */,
 				C1BCC1A72693DFF6008D0BC5 /* SettingsView.swift in Sources */,
 				C1096596266ED2AF00A85959 /* Globals.swift in Sources */,
 				C1DE0B1326940CBD003BC869 /* DTNotificationManager.swift in Sources */,
@@ -324,14 +448,89 @@
 				C120A90D269E5C74000C1DBB /* FolderView.swift in Sources */,
 				C1096587266E817500A85959 /* Video.swift in Sources */,
 				C18BF47D2693AEE900FFCB96 /* DTProgressView.swift in Sources */,
+				C195FAE226D9C08900DA7892 /* BlurView.swift in Sources */,
 				C18FE85C26B8862E00323790 /* VideoView.swift in Sources */,
+				C195FAE626D9C49000DA7892 /* MediaPlayerButton.swift in Sources */,
 				C1096590266E856600A85959 /* YoutubeAPIFormatter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		C12872FE26DF1B4F00A6E294 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C12872F426DF1B4F00A6E294 /* DownloadExtension */;
+			targetProxy = C12872FD26DF1B4F00A6E294 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C12872F926DF1B4F00A6E294 /* MainInterface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C12872FA26DF1B4F00A6E294 /* Base */,
+			);
+			name = MainInterface.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
+		C128730126DF1B4F00A6E294 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N724UK46BJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DownloadExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DownloadExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BenjaminNakiwala.DownTube.DownloadExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C128730226DF1B4F00A6E294 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N724UK46BJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DownloadExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DownloadExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BenjaminNakiwala.DownTube.DownloadExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		C13DBADD266ADEBD007ADD8A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -451,6 +650,7 @@
 		C13DBAE0266ADEBD007ADD8A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -475,6 +675,7 @@
 		C13DBAE1266ADEBD007ADD8A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -499,6 +700,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C128730026DF1B4F00A6E294 /* Build configuration list for PBXNativeTarget "DownloadExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C128730126DF1B4F00A6E294 /* Debug */,
+				C128730226DF1B4F00A6E294 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C13DBAC6266ADEB9007ADD8A /* Build configuration list for PBXProject "DownTube" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -531,6 +741,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C128730326DF1B5700A6E294 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C134407D26B395C400A16394 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
+		};
 		C134407E26B395C400A16394 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C134407D26B395C400A16394 /* XCRemoteSwiftPackageReference "SwiftSoup" */;

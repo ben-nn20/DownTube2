@@ -12,9 +12,10 @@ struct VideoCell: View {
     @StateObject var orientation = Orientation()
 //    @StateObject var mainViewUpdator = MainViewUpdator.shared
     @EnvironmentObject var video: Video
-    @State var shouldDelete: Video?
+    @State var shouldDelete = false
     var body: some View {
         HStack {
+            // image
            if let data = video.imageData {
                 Image(uiImage: UIImage(data: data)!)
                     .resizable()
@@ -22,19 +23,18 @@ struct VideoCell: View {
              } else {
                 Image(systemName: "arrow.down").frame(width: 60, height: 60, alignment: .center)
             }
-            
+            // video stats
             ZStack {
+                // progress bar
                 if video.downloadStatus == .downloading {
                     DTProgressView(progress: video.downloadProgress)
                 }
                 VStack(alignment: .leading, spacing: nil, content: {
-                    VStack(alignment: .leading, spacing: nil, content: {
-                        Spacer()
+                    Spacer()
                         Text(video.title)
                         Text(video.channelName)
                             .font(.system(size: 10, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
-                    })
                     Spacer()
                     Text(video.uploadDate, style: .date)
                         .font(.footnote)
@@ -49,14 +49,13 @@ struct VideoCell: View {
             Spacer()
             if video.downloadStatus == .waiting {
                 ProgressView()
+                    .offset(x: -30)
+            } else {
+                Text(video.timeStamp)
+                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .offset(x: -30)
             }
-            Spacer()
-            Text(video.timeStamp)
-                .font(.system(size: 12, weight: .regular, design: .rounded))
-                .foregroundColor(.secondary)
-                
-            Spacer()
-            Spacer()
         }
         .contextMenu {
             Button {
@@ -69,7 +68,7 @@ struct VideoCell: View {
                 }
             }
             Button {
-                shouldDelete = video
+                shouldDelete = true
             } label: {
                 HStack {
                     Text("Delete")
@@ -89,15 +88,25 @@ struct VideoCell: View {
             
         }
         .frame(width: UIScreen.main.bounds.width, height: 75, alignment: .center)
-        .alert(item: $shouldDelete) { video in
-            let text = "Delete Video?"
-            return Alert(title: Text(text), message: nil, primaryButton: .cancel(), secondaryButton: .destructive(Text("Delete")) {
-                DTDownloadManager.shared.cancelDownloads(for: video)
-                video.delete()
-            })
+        .alert(Text(video.alertInfo.title), isPresented: $video.showAlert) {
+            Button("Dismiss", role: .cancel) {}
+        } message: {
+            Text(video.alertInfo.message)
         }
-        .alert(isPresented: $video.showAlert) {
-            Alert(title: Text(video.alertInfo.title), message: Text(video.alertInfo.message), dismissButton: .cancel())
+        .alert(Text("Delete Video?"), isPresented: $shouldDelete) {
+            Button("Delete", role: .destructive) {
+                video.delete()
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .onDrag {
+            let provider = NSItemProvider()
+            provider.registerObject(ofClass: NSString.self, visibility: .ownProcess) { completion in
+                let str = video.videoId as NSString
+                completion(str, nil)
+                return nil
+            }
+            return provider
         }
     }
 }

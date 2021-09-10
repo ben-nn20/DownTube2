@@ -9,30 +9,43 @@ import SwiftUI
 import AVKit
 
 struct VideoView: View {
+    @Environment(\.dismiss) var dismiss
     @StateObject var orientation = Orientation()
     @EnvironmentObject var video: Video
+    var isSheet = false
     var body: some View {
-         VStack {
-            ScrollView {
-                LazyVStack(alignment: .leading) {
+        if isSheet {
+            NavigationView {
+                VStack(alignment: .leading) {
                     DTVideoPlayer(video: video)
                         .cornerRadius(10)
                         .padding(.all, 8)
                         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width * 0.5625, alignment: .top)
                     Divider()
-                    VStack(alignment: .leading) {
-                        Text(video.title)
-                            .font(.largeTitle)
-                        Text(video.videoDescription)
-                    }
-                    .padding(.leading, 5)
-                    
+                    DTTextView(video: video)
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                video.lastOpened = Date()
+            }
+            .navigationBarItems(leading: EmptyView(), trailing: Button("Done") {
+                dismiss()
+            })
+        } else {
+            VStack(alignment: .leading) {
+                DTVideoPlayer(video: video)
+                    .cornerRadius(10)
+                    .padding(.all, 8)
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width * 0.5625, alignment: .top)
+                Divider()
+                DTTextView(video: video)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                video.lastOpened = Date()
+            }
         }
-         .onAppear {
-             video.lastOpened = Date()
-         }
     }
 }
 

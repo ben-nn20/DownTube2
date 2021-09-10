@@ -18,7 +18,8 @@ struct StorageRectangeView: View {
     }
     var body: some View {
         Rectangle()
-            .frame(width: 2, height: 20, alignment: .center)
+            .frame(width: width, height: 40, alignment: .center)
+            .border(.blue)
             .scaleEffect(x: isAnimating ? width / 2 : 1, anchor: .trailing)
             .onAppear {
                 withAnimation(Animation.spring(blendDuration: 0.5).delay(0.5)) {

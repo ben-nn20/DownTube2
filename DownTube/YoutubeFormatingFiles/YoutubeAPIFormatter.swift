@@ -74,8 +74,8 @@ struct YoutubeAPIParser {
         self.videoId = videoId
     }
     mutating func format(_ completionHandler: @escaping (VideoInfo?) -> Void) {
-        // Working videoId = wGKb3oUo8go
-        URLSession.shared.dataTask(with: URL(string: "https://www.youtube.com/watch?v=\(videoId)")!) { (data, response, error) in
+        let req = URLRequest(url: URL(string: "https://www.youtube.com/watch?v=\(videoId)")!)
+        URLSession.shared.dataTask(with: req) { (data, response, error) in
             guard error == nil else {
                 logs.insert(error!, at: 0)
                 return
