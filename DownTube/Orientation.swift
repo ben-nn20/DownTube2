@@ -9,19 +9,25 @@ import UIKit
 import Combine
 
 class Orientation: ObservableObject {
-    @Published var direction: Direction = Direction.portriat
-    private var publisher: AnyCancellable?
+    @Published var direction: Direction = .portriat
+    var observer: ((Direction) -> Void)?
     enum Direction {
         case landscape
         case portriat
     }
     init() {
-       publisher = NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification).sink { [self] _ in
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+        orientationDidChange()
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    @objc private func orientationDidChange() {
         switch UIDevice.current.orientation {
             case .faceDown :
-                direction = .portriat
+                break
             case .faceUp :
-                direction = .portriat
+                break
             case .landscapeLeft :
                 direction = .landscape
             case .landscapeRight :
@@ -35,6 +41,6 @@ class Orientation: ObservableObject {
             @unknown default:
                 break
             }
-        }
+        observer?(direction)
     }
 }

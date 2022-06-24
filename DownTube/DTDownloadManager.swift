@@ -35,8 +35,7 @@ class DTDownloadManager: NSObject {
     func download(videoURL: URL, thumbnailURL: URL? = nil, video: Video) {
         // thumbnail urlSessiontask
         if let thumbnailURL = thumbnailURL {
-            var thumbReq = URLRequest(url: thumbnailURL)
-            thumbReq.allowsCellularAccess = Settings.shared.useCellularData
+            let thumbReq = URLRequest(url: thumbnailURL)
             URLSession.shared.dataTask(with: thumbReq) { (data, response, error) in
                 guard error == nil else { return }
                 try! data!.write(to: video.thumbnailUrl)
@@ -49,7 +48,6 @@ class DTDownloadManager: NSObject {
             // video urlSessionTask
             var req = URLRequest(url: videoURL)
             req.addValue("", forHTTPHeaderField: "Range")
-            req.allowsCellularAccess = Settings.shared.useCellularData
             let videoDownloadTask = urlSession.downloadTask(with: videoURL)
             videoDownloadTask.resume()
             video.downloadProgress = videoDownloadTask.progress
@@ -57,10 +55,10 @@ class DTDownloadManager: NSObject {
                 video.downloadStatus = .downloading
             }
             downloadingVideos.append((videoDownloadTask, video))
-            logs.insert(NSError(domain: "Downloading \(video.title)", code: 0, userInfo: nil), at:  0)
+            Logs.addError(NSError(domain: "Downloading \(video.title)", code: 0, userInfo: nil))
         } else {
             downloadQueue.append((videoURL, video))
-            logs.insert(NSError(domain: "Scheduled Download of \(video.title)", code: 0, userInfo: nil), at: 0)
+            Logs.addError(NSError(domain: "Scheduled Download of \(video.title)", code: 0, userInfo: nil))
             video.downloadStatus = .waiting
         }
     }
@@ -78,7 +76,33 @@ class DTDownloadManager: NSObject {
         }
         if let videoAndInfo = videoAndInfo {
             videoAndInfo.videoTask.cancel()
-            logs.insert(NSError(domain: "Cancelled \(video.title)", code: 0, userInfo: nil), at: 0)
+            downloadingVideos.removeAll {
+                $0 == videoAndInfo
+            }
+            Logs.addError(NSError(domain: "Cancelled \(video.title)", code: 0, userInfo: nil))
+        }
+    }
+    func pauseDownloads() {
+        downloadingVideos.forEach {
+            $0.videoTask.suspend()
+        }
+    }
+    func pauseDownload(for video: Video) {
+        let videoAndInfo = downloadingVideos.first {
+            $0.video === video
+        }
+        if let videoAndInfo = videoAndInfo {
+            videoAndInfo.videoTask.suspend()
+            video.downloadStatus = .paused
+        }
+    }
+    func resumeDownload(for video: Video) {
+        let videoAndInfo = downloadingVideos.first {
+            $0.video === video
+        }
+        if let videoAndInfo = videoAndInfo {
+            videoAndInfo.videoTask.resume()
+            video.downloadStatus = .downloading
         }
     }
     private func getVideoFrom(task: URLSessionTask) -> Video? {
@@ -102,11 +126,21 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
             $0 == nextVideo
         }
     }
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+        guard let video = getVideoFrom(task: downloadTask) else { return }
+        DispatchQueue.main.async {
+            video.downloadFractionCompleted = video.downloadProgress.fractionCompleted
+            let timeDiff = CFAbsoluteTimeGetCurrent() - video.downloadSpeedTimeStamp
+            let speed = Double(bytesWritten) / timeDiff
+            video.downloadSpeed = "\(ByteCountFormatter.string(fromByteCount: Int64(speed), countStyle: .binary))/s"
+            video.downloadSpeedTimeStamp = CFAbsoluteTimeGetCurrent()
+        }
+    }
     // Handle Resume Data
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let video = getVideoFrom(task: task), let error = error else { return }
         video.downloadDidFailWith(error: error)
-        logs.insert(error, at: 0)
+        Logs.addError(error)
     }
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         DispatchQueue.main.async { [weak self] in

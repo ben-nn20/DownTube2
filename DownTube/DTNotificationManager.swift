@@ -30,7 +30,7 @@ class DTNotificationManager {
         unCenter.add(request) {
             error in
             if let error = error {
-                logs.insert(error, at: 0)
+                Logs.addError(error)
             }
         }
     }

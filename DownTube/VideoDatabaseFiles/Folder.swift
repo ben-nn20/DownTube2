@@ -8,29 +8,33 @@
 import Foundation
 import Combine
 
-class Folder: ObservableObject, Codable, Identifiable, Hashable {
-    @Published var videoFolders: [VideoFolder] {
+class Folder: NSObject, ObservableObject, Codable, Identifiable, VideoDatabaseContainer {
+    @Published @objc dynamic var videoFolderStore: [VideoFolder] {
         didSet {
-            var newValue = videoFolders
+            var newValue = videoFolderStore
             newValue.removeAll { vF in
                 oldValue.contains {
                     $0 === vF
                 }
             }
-            let videos = newValue.compactMap {
-                $0.video
-            }
-            videos.forEach {
-                $0.parentFolderId = id
+            newValue.forEach {
+                if !isChannelFolder {
+                    if let video = $0.video {
+                        video.parentFolderId = id
+                    } else if let folder = $0.folder {
+                        folder.parentFolderId = id
+                    }
+                }
             }
         }
     }
+    typealias ID = String
     var id: String
     @Published var name: String
     @Published var channelId: String?
     @Published var lastOpened = Date()
     @Published var dateCreated = Date()
-    var parentFolder: Folder?
+    var parentFolderId: String?
     var isChannelFolder: Bool {
         channelId != nil
     }
@@ -43,91 +47,62 @@ class Folder: ObservableObject, Codable, Identifiable, Hashable {
         }
         return fileSize
     }
-    var allVideos: [Video] {
-        var videos = [Video]()
-        videos.append(contentsOf: self.videos)
-        folders.forEach {
-            videos.append(contentsOf: $0.allVideos)
-        }
-        return videos
-    }
-    var videos: [Video] {
-        videoFolders.compactMap {
-            // getting videos
-            $0.video
-        }
-    }
-    var allFolders: [Folder] {
-        let folders = folders
-        var allFolders = [Folder]()
-        folders.forEach {
-            allFolders.append(contentsOf: $0.allFolders)
-        }
-        allFolders.append(contentsOf: folders)
-        return allFolders
-    }
-    var folders: [Folder] {
-        videoFolders.compactMap {
-            $0.folder
-        }
-    }
-    func hash(into hasher: inout Hasher) {
+    
+    override var hash: Int {
+        var hasher = Hasher()
         hasher.combine(channelId)
+        return hasher.finalize()
     }
     func delete() {
-        videoFolders.forEach {
+        videoFolderStore.forEach {
             $0.delete()
         }
-    }
-    func removeFolder() {
-        VideoDatabase.shared.videoFolders.append(contentsOf: videoFolders)
-        if let parentFolder = parentFolder {
-            parentFolder.videoFolders.removeAll {
+        if let parentFolderId = parentFolderId, let folder = Folder.folderFrom(parentFolderId) {
+            folder.videoFolderStore.removeAll {
                 $0.folder === self
             }
         } else {
-            VideoDatabase.shared.videoFolders.removeAll {
+            VideoDatabase.shared.videoFolderStore.removeAll {
                 $0.folder === self
             }
         }
     }
-    func add(_ index: Int,_ vid: Video? = nil,_ folder: Folder? = nil) {
-        if let vid = vid {
-            videoFolders.insert(VideoFolder(video: vid), at: index)
-        }
-        if let folder = folder {
-            videoFolders.insert(VideoFolder(folder: folder), at: index)
-        }
-    }
-    func remove(_ vid: Video? = nil, _ folder: Folder? = nil) {
-        if let vid = vid {
-            self.videoFolders.removeAll {
-                $0.video === vid
+    func removeFolder() {
+        VideoDatabase.shared.videoFolderStore.append(contentsOf: videoFolderStore)
+        if let parentFolderId = parentFolderId, let folder = Folder.folderFrom(parentFolderId) {
+            folder.videoFolderStore.removeAll {
+                $0.folder === self
+            }
+        } else {
+            VideoDatabase.shared.videoFolderStore.removeAll {
+                $0.folder === self
             }
         }
-        if let folder = folder {
-            self.videoFolders.removeAll {
-                $0.folder === folder
+        // Handle folder ids
+        videoFolders().forEach {
+            if let video = $0.video {
+                video.parentFolderId = nil
+            } else if let folder = $0.folder {
+                folder.parentFolderId = nil
             }
         }
     }
     static func == (lhs: Folder, rhs: Folder) -> Bool {
         lhs.channelId == rhs.channelId
     }
-    static func folderFrom(_ id: String) -> Folder {
+    static func folderFrom(_ id: String) -> Folder? {
         let allFolders = VideoDatabase.shared.allFolders
-        print(id)
         return allFolders.first {
-            print($0.id)
             return $0.id == id
-        }!
+        }
     }
-    init(videoFolders: [VideoFolder], name: String, parentFolder: Folder? = nil, channelId: String? = nil, id: String? = nil) {
-        self.videoFolders = videoFolders
+    init(videoFolders: [VideoFolder], name: String, parentFolderId: String? = nil, channelId: String? = nil, id: String? = nil) {
+        self.videoFolderStore = videoFolders
         self.name = name
         self.channelId = channelId
-        self.parentFolder = parentFolder
+        self.parentFolderId = parentFolderId
         self.id = UUID().uuidString
+        super.init()
         self.videos.forEach {
             $0.parentFolderId = self.id
         }
@@ -136,27 +111,27 @@ class Folder: ObservableObject, Codable, Identifiable, Hashable {
         case videoFolders
         case name
         case channelId
-        case parentFolder
+        case parentFolderId
         case lastOpened
         case dateCreated
         case id
     }
     required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        videoFolders = try values.decode([VideoFolder].self, forKey: .videoFolders)
+        videoFolderStore = try values.decode([VideoFolder].self, forKey: .videoFolders)
         name = try values.decode(String.self, forKey: .name)
         channelId = try values.decode(String?.self, forKey: .channelId)
-        parentFolder = try values.decode(Folder?.self, forKey: .parentFolder)
+        parentFolderId = try values.decode(String?.self, forKey: .parentFolderId)
         lastOpened = try values.decode(Date.self, forKey: .lastOpened)
         dateCreated = try values.decode(Date.self, forKey: .dateCreated)
         id = try values.decode(String.self, forKey: .id)
     }
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(videoFolders, forKey: .videoFolders)
+        try container.encode(videoFolderStore, forKey: .videoFolders)
         try container.encode(name, forKey: .name)
         try container.encode(channelId, forKey: .channelId)
-        try container.encode(parentFolder, forKey: .parentFolder)
+        try container.encode(parentFolderId, forKey: .parentFolderId)
         try container.encode(lastOpened, forKey: .lastOpened)
         try container.encode(dateCreated, forKey: .dateCreated)
         try container.encode(id, forKey: .id)

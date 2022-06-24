@@ -18,8 +18,9 @@ import CoreSpotlight
         UNUserNotificationCenter.current().delegate = self
     }
     func applicationDidFinishLaunching(_ application: UIApplication) {
-        let hostingVC = UIHostingController(rootView: ContentView())
-        window?.rootViewController = hostingVC
+        //let vc = UINavigationController(rootViewController: VideoListViewController())
+        let vc = UIHostingController(rootView: ContentView())
+        window?.rootViewController = vc
         window?.makeKeyAndVisible()
         DTNotificationManager.shared.requestAuthorization()
         try! AVAudioSession.sharedInstance().setCategory(.playback)
@@ -37,6 +38,7 @@ import CoreSpotlight
         }
         if let video = video {
             MainViewUpdator.shared.showVideo = video
+            // push for uikit
             return true
         }
         return false
@@ -47,7 +49,11 @@ import CoreSpotlight
         }
     }
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-        DTDownloadManager.shared.urlSessionCallback = completionHandler
+        if identifier == "VideoDownloaderConfiguaration" {
+            DTDownloadManager.shared.urlSessionCallback = completionHandler
+        } else {
+            DTSpeedDownloadManager.shared.urlSessionCallback = completionHandler
+        }
     }
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         print("Memory Warning")

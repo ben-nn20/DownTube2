@@ -25,7 +25,7 @@ struct FolderView: View {
     @State var selectAllButtonText = "Select All"
     //MARK: Computed Properties
     var searchedVideos: [Video] {
-        folder.videoFolders
+        folder.videoFolderStore
             .compactMap { $0.video }
             .filter { $0.title.lowercased().contains(searchText.lowercased()) || $0.channelName.lowercased().contains(searchText.lowercased()) || $0.description.lowercased().contains(searchText.lowercased()) || $0.videoId.lowercased().contains(searchText.lowercased()) }
     }
@@ -84,7 +84,7 @@ struct FolderView: View {
         //MARK: Editing List
         if editMode != nil, let isEditing = editMode?.wrappedValue.isEditing, isEditing {
             VStack {
-                List(folder.videoFolders, selection: $videoSelection) { videoFolder in
+                List(folder.videoFolderStore, selection: $videoSelection) { videoFolder in
                     if let video = videoFolder.video {
                         VideoCell()
                             .environmentObject(video)
@@ -96,15 +96,15 @@ struct FolderView: View {
                 HStack {
                     Spacer()
                     Button {
-                        let videoFolders = folder.videoFolders.filter {
+                        let videoFolders = folder.videoFolderStore.filter {
                             videoSelection.contains($0.id)
                         }
-                        folder.videoFolders.removeAll { vF in
+                        folder.videoFolderStore.removeAll { vF in
                             videoFolders.contains {
                                 $0 === vF
                             }
                         }
-                        folder.videoFolders.append(VideoFolder(video: nil, folder: Folder(videoFolders: videoFolders, name: "Untitled")))
+                        folder.videoFolderStore.append(VideoFolder(video: nil, folder: Folder(videoFolders: videoFolders, name: "Untitled")))
                     } label: {
                         Image(systemName: "folder.badge.plus")
                             .font(.system(size: 15))
@@ -124,7 +124,7 @@ struct FolderView: View {
                 }
             }
             .navigationBarItems(leading: Button(selectAllButtonText) {
-                let allSelections = Set(folder.videoFolders.map {
+                let allSelections = Set(folder.videoFolderStore.map {
                     $0.id
                 })
                 if videoSelection == allSelections {
@@ -138,7 +138,7 @@ struct FolderView: View {
                                     .foregroundColor(.blue))
             .listStyle(PlainListStyle())
             .alert(isPresented: $shouldDelete) {
-                let videoFolders = folder.videoFolders.filter {
+                let videoFolders = folder.videoFolderStore.filter {
                     shouldDeleteItems.contains($0.id)
                 }
                 return Alert(title: Text("Delete \(videoFolders.count) items?"), message: nil, primaryButton: Alert.Button.destructive(Text("Delete"), action: {
@@ -158,7 +158,7 @@ struct FolderView: View {
             .confirmationDialog(Text("Delete Folders?"), isPresented: $attemptingToDeleteFolders) {
                 VStack {
                     Button("Delete Every Folder and its Contents", role: .destructive) {
-                        let videoFolders = folder.videoFolders.filter {
+                        let videoFolders = folder.videoFolderStore.filter {
                             shouldDeleteItems.contains($0.id)
                         }
                         // Delete Videos
@@ -176,7 +176,7 @@ struct FolderView: View {
                         }
                     }
                     Button("Delete Only the Folder") {
-                        let videoFolders = folder.videoFolders.filter {
+                        let videoFolders = folder.videoFolderStore.filter {
                             shouldDeleteItems.contains($0.id)
                         }
                         let folders = videoFolders.filter {
@@ -212,8 +212,7 @@ struct FolderView: View {
                         .onInsert(of: [UTType.plainText], perform: drop)
                         ForEach(filteredVideos) { video in
                             NavigationLink(
-                                destination: VideoView()
-                                    .environmentObject(video),
+                                destination: VideoView(video: video),
                                 label: {
                                     VideoCell()
                                         .environmentObject(video)
@@ -234,8 +233,7 @@ struct FolderView: View {
                         .onInsert(of: [UTType.plainText], perform: drop)
                         ForEach(filteredVideos) { video in
                             NavigationLink(
-                                destination: VideoView()
-                                    .environmentObject(video),
+                                destination: VideoView(video: video),
                                 label: {
                                     VideoCell()
                                         .environmentObject(video)
@@ -256,8 +254,7 @@ struct FolderView: View {
                     }
                     ForEach(searchedVideos) { video in
                         NavigationLink(
-                            destination: VideoView()
-                                .environmentObject(video),
+                            destination: VideoView(video: video),
                             label: {
                                 VideoCell()
                                     .environmentObject(video)
@@ -307,7 +304,7 @@ struct FolderView: View {
                 }.map {
                     VideoFolder(video: $0, folder: nil)
                 }
-                folder.videoFolders.append(contentsOf: videoFolders)
+                folder.videoFolderStore.append(contentsOf: videoFolders)
             } content: {
                    SelectionView()
             }
@@ -322,7 +319,7 @@ struct FolderView: View {
                            $0.videoId == vidID as! String
                        }
                        VideoDatabase.shared.remove(video)
-                       folder.add(index, video)
+                       folder.add(video)
                    }
                }
            }

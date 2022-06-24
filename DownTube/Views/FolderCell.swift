@@ -45,7 +45,7 @@ struct FolderCell: View {
                             $0.videoId == vidID
                         }
                         VideoDatabase.shared.remove(video)
-                        folder.add(0, video)
+                        folder.add(video)
                     })
                 return true
             }

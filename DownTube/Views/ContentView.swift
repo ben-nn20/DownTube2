@@ -9,8 +9,8 @@ import SwiftUI
 import AVKit
 
 struct ContentView: View {
-    @StateObject var orientation = Orientation()
     @StateObject var systemContext = MainViewUpdator.shared
+    @StateObject var orientation = Orientation()
     @State var addButtonIsShowing = false
     @State var errorAlertShowing = false
     @State var deleteAlertShowing = false
@@ -46,8 +46,7 @@ struct ContentView: View {
                 InputView()
             }
             .sheet(item: $systemContext.showVideo, onDismiss: nil) { video in
-                VideoView(isSheet: true)
-                    .environmentObject(video)
+                VideoView(video: video, isSheet: true)
             }
         }
     }

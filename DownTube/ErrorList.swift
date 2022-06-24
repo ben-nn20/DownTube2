@@ -10,22 +10,12 @@ import SwiftUI
 struct ErrorList: View {
     @State var errorAlertShowing = false
     @State var error: NSError?
+    @StateObject var logs = Logs.shared
     @Environment(\.dismiss) var dismiss
     var body: some View {
-        List {
-            
-            if logs.count > 0 {
-                ForEach(Range<Int>(0 ... logs.count - 1)) { i in
-                    let error = logs[i] as NSError
-                    Text(error.domain + " " +  (error.localizedFailureReason ?? ""))
-                        .onTapGesture {
-                            self.error = error
-                            errorAlertShowing = true
-                        }
-                }
-            } else {
-                EmptyView()
-            }
+        List($logs.logs, id: \.id) { log in
+            let error = log.wrappedValue
+            Text(error.domain + " " + error.localizedDescription)
         }
         .toolbar {
             Button("Done") {

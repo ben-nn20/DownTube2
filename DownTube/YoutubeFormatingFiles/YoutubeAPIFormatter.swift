@@ -77,13 +77,13 @@ struct YoutubeAPIParser {
         let req = URLRequest(url: URL(string: "https://www.youtube.com/watch?v=\(videoId)")!)
         URLSession.shared.dataTask(with: req) { (data, response, error) in
             guard error == nil else {
-                logs.insert(error!, at: 0)
+                Logs.addError(error!)
                 return
             }
-            logs.insert(NSError(domain: "Retreiving Youtube Info", code: 0, userInfo: nil), at: 0)
+            Logs.addError(NSError(domain: "Retreiving Youtube Info", code: 0, userInfo: nil))
             do {
             let doc = try SwiftSoup.parse(String(data: data!, encoding: .utf8)!)
-            logs.insert(NSError(domain: "Parsed html.", code: 0, userInfo: nil), at: 0)
+                Logs.addError(NSError(domain: "Parsed html.", code: 0, userInfo: nil))
             guard let script = try doc.getElementsByTag("script").first(where: { element in
                 let text = String(describing: element)
                 return text.contains("ytInitialPlayerResponse") && text.contains("\"responseContext\"")
@@ -100,11 +100,11 @@ struct YoutubeAPIParser {
                 let youtubeInfo = try jsonDecoder.decode(VideoInfo.self, from: str.data(using: .utf8)!)
                 completionHandler(youtubeInfo)
             } catch {
-                logs.insert(error, at: 0)
+                Logs.addError(error)
                 print(error)
                 }
             } catch {
-                logs.insert(error, at: 0)
+                Logs.addError(error)
                 print(error)
             }
         }.resume()

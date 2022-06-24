@@ -8,113 +8,115 @@
 import SwiftUI
 import AVKit
 
-struct VideoCell: View {
-    @StateObject var orientation = Orientation()
-//    @StateObject var mainViewUpdator = MainViewUpdator.shared
-    @EnvironmentObject var video: Video
-    @State var shouldDelete = false
-    var body: some View {
-        HStack {
-            // image
-           if let data = video.imageData {
-                Image(uiImage: UIImage(data: data)!)
-                    .resizable()
-                    .frame(width: 75 * (video.asceptRatio ?? 1.77), height: 75, alignment: .center)
+ struct VideoCell: View {
+ //    @StateObject var mainViewUpdator = MainViewUpdator.shared
+     @StateObject var orientation = Orientation()
+     @EnvironmentObject var video: Video
+     @State var shouldDelete = false
+     var body: some View {
+         HStack {
+             // image
+            if let data = video.imageData {
+                 Image(uiImage: UIImage(data: data)!)
+                     .resizable()
+                     .frame(width: 93.1, height: 70)
+              } else {
+                 Image(systemName: "arrow.down").frame(width: 60, height: 60, alignment: .center)
+             }
+             // video stats
+                 VStack(alignment: .leading, spacing: nil, content: {
+                     Spacer()
+                         Text(video.title)
+                         Text(video.channelName)
+                             .font(.system(size: 10, weight: .medium, design: .rounded))
+                             .foregroundColor(.secondary)
+                     Spacer()
+                     Text(video.uploadDate, style: .date)
+                         .font(.footnote)
+                     if video.downloadStatus == .downloaded {
+                         Text(video.videoSize)
+                             .foregroundColor(.secondary)
+                             .font(.system(size: 12, weight: .regular, design: .rounded))
+                     } else if video.downloadStatus == .paused {
+                         Text("Paused")
+                             .foregroundColor(.secondary)
+                             .font(.system(size: 12, weight: .regular, design: .rounded))
+                     } else if video.downloadStatus == .downloading {
+                         Text("\(Int(video.downloadProgress.fractionCompleted * 100))% Downloaded | \(video.downloadSpeed)")
+                             .foregroundColor(.secondary)
+                             .font(.system(size: 12, weight: .regular, design: .rounded))
+                     }
+                     Spacer()
+                 })
+             Spacer()
+             if video.downloadStatus == .waiting {
+                 ProgressView()
+                     .offset(x: -30)
+             } else if video.downloadStatus == .paused {
+                 Image(systemName: "arrow.triangle.2.circlepath")
+                     .offset(x: -30)
              } else {
-                Image(systemName: "arrow.down").frame(width: 60, height: 60, alignment: .center)
-            }
-            // video stats
-            ZStack {
-                // progress bar
-                if video.downloadStatus == .downloading {
-                    DTProgressView(progress: video.downloadProgress)
-                }
-                VStack(alignment: .leading, spacing: nil, content: {
-                    Spacer()
-                        Text(video.title)
-                        Text(video.channelName)
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
-                            .foregroundColor(.secondary)
-                    Spacer()
-                    Text(video.uploadDate, style: .date)
-                        .font(.footnote)
-                    if video.downloadStatus == .downloaded {
-                        Text(video.videoSize)
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 12, weight: .regular, design: .rounded))
-                    }
-                    Spacer()
-                })
-            }
-            Spacer()
-            if video.downloadStatus == .waiting {
-                ProgressView()
-                    .offset(x: -30)
-            } else {
-                Text(video.timeStamp)
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                    .foregroundColor(.secondary)
-                    .offset(x: -30)
-            }
-        }
-        .contextMenu {
-            Button {
-                // Play Audio
-                AudioPlayer.shared.play(video)
-            } label: {
-                HStack {
-                    Text("Play Audio")
-                    Image(systemName: "speaker.wave.3.fill")
-                }
-            }
-            Button {
-                shouldDelete = true
-            } label: {
-                HStack {
-                    Text("Delete")
-                        .foregroundColor(.red)
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                }
-            }
-            Button {
-                video.reDownload()
-            } label: {
-                HStack {
-                    Text("Re-Download")
-                    Image(systemName: "arrow.down")
-                }
-            }
-            
-        }
-        .frame(width: UIScreen.main.bounds.width, height: 75, alignment: .center)
-        .alert(Text(video.alertInfo.title), isPresented: $video.showAlert) {
-            Button("Dismiss", role: .cancel) {}
-        } message: {
-            Text(video.alertInfo.message)
-        }
-        .alert(Text("Delete Video?"), isPresented: $shouldDelete) {
-            Button("Delete", role: .destructive) {
-                video.delete()
-            }
-            Button("Cancel", role: .cancel) {}
-        }
-        .onDrag {
-            let provider = NSItemProvider()
-            provider.registerObject(ofClass: NSString.self, visibility: .ownProcess) { completion in
-                let str = video.videoId as NSString
-                completion(str, nil)
-                return nil
-            }
-            return provider
-        }
-    }
-}
-
-struct VideoCell_Previews: PreviewProvider {
-    static var previews: some View {
-        VideoCell()
-            .environmentObject(Video.example)
-            .previewLayout(.fixed(width: UIScreen.main.bounds.width, height: 75))
-    }
-}
+                 Text(video.timeStamp)
+                     .font(.system(size: 12, weight: .regular, design: .rounded))
+                     .foregroundColor(.secondary)
+                     .offset(x: -30)
+             }
+         }
+         .contextMenu {
+             Button {
+                 // Play Audio
+                 AudioPlayer.shared.play(video)
+             } label: {
+                 HStack {
+                     Text("Play Audio")
+                     Image(systemName: "speaker.wave.3.fill")
+                 }
+             }
+             Button {
+                 shouldDelete = true
+             } label: {
+                 HStack {
+                     Text("Delete")
+                         .foregroundColor(.red)
+                     Image(systemName: "trash")
+                         .foregroundColor(.red)
+                 }
+             }
+             Button {
+                 video.reDownload()
+             } label: {
+                 HStack {
+                     Text("Re-Download")
+                     Image(systemName: "arrow.down")
+                 }
+             }
+             
+         }
+         .frame(width: UIScreen.main.bounds.width, height: 70, alignment: .center)
+         .alert(Text(video.alertInfo.title), isPresented: $video.showAlert) {
+             Button("Dismiss", role: .cancel) {}
+         } message: {
+             Text(video.alertInfo.message)
+         }
+         .alert(Text("Delete Video?"), isPresented: $shouldDelete) {
+             Button("Delete", role: .destructive) {
+                 video.delete()
+             }
+             Button("Cancel", role: .cancel) {}
+         }
+         .onDrag {
+             let provider = NSItemProvider()
+             provider.registerObject(ofClass: NSString.self, visibility: .ownProcess) { completion in
+                 let str = video.videoId as NSString
+                 completion(str, nil)
+                 return nil
+             }
+             return provider
+         }
+     }
+     static func cell(video: Video) -> some View {
+         VideoCell()
+             .environmentObject(video)
+     }
+ }
+ //*/

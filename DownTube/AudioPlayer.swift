@@ -77,6 +77,10 @@ class AudioPlayer: NSObject, ObservableObject {
                 self.currentTime = player.currentTime
                 if let currentlyPlayingVideo = currentlyPlayingVideo {
                     currentlyPlayingVideo.playbackPosition = player.currentTime
+                    guard let duration = currentlyPlayingVideo.duration else { return }
+                    if Int(currentlyPlayingVideo.playbackPosition) == duration {
+                        currentlyPlayingVideo.playbackPosition = 0
+                    }
                 }
             } else {
                 timer.invalidate()
@@ -119,6 +123,12 @@ class AudioPlayer: NSObject, ObservableObject {
         try? AVAudioSession.sharedInstance().setActive(false, options: [])
         infoCenter.nowPlayingInfo = nil
         player.stop()
+        commandCenter.playCommand.isEnabled = false
+        commandCenter.pauseCommand.isEnabled = false
+        commandCenter.stopCommand.isEnabled = false
+        commandCenter.skipForwardCommand.isEnabled = false
+        commandCenter.skipBackwardCommand.isEnabled = false
+        commandCenter.changePlaybackPositionCommand.isEnabled = false
     }
     /// Begins playback at specified time.
     func play(at time: TimeInterval) {
@@ -140,12 +150,12 @@ class AudioPlayer: NSObject, ObservableObject {
             player = try AVAudioPlayer(contentsOf: video.videoUrl, fileTypeHint: "mp4")
             player.currentTime = video.playbackPosition
             player.delegate = self
-            if video.parentFolderId != kROOTFolder {
-                currentlyPlayingFolder = Folder.folderFrom(video.parentFolderId)
+            if video.parentFolderId != nil {
+                currentlyPlayingFolder = Folder.folderFrom(video.parentFolderId!)
             }
         } catch {
             //audioPlayerDidFinishPlaying(player, successfully: false)
-            logs.insert(error, at: 0)
+            Logs.addError(error)
             print(error)
         }
         

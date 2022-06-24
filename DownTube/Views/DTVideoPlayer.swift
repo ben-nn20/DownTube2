@@ -21,7 +21,6 @@ final class DTVideoPlayer: UIViewControllerRepresentable {
         videoVC.entersFullScreenWhenPlaybackBegins = true
         videoVC.exitsFullScreenWhenPlaybackEnds = true
         videoVC.showsPlaybackControls = true
-        videoVC.updatesNowPlayingInfoCenter = false
         videoVC.player = video!.avPlayer
         if Settings.shared.shouldAutoplay {
             playTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [self] _ in

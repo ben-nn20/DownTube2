@@ -40,7 +40,7 @@ struct InputView: View {
                 }
                 str.removeSubrange(str.firstIndex(of: str.first!)! ... ohmIndex)
                 
-                if !VideoDatabase.shared.videos.contains(where: {  $0.videoId == str
+                if !VideoDatabase.shared.videos.contains(where: { $0.videoId == str
                 }) {
                     if let parentFolderId = parentFolderId {
                         Video.video(fromVideoId: str, parentFolderId: parentFolderId)

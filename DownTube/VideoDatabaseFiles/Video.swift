@@ -11,13 +11,13 @@ import Combine
 import UIKit
 
 class Video: NSObject, ObservableObject, Codable, Identifiable {
-    @Published var title: String
-    @Published var channelName: String
-    @Published var channelID: String
-    @Published var uploadDate: Date
+    var title: String
+    var channelName: String
+    var channelID: String
+    var uploadDate: Date
     @Published var duration: Int?
-    @Published var videoId: String
-    @Published var thumbnailIsDownloaded = false
+    var videoId: String
+    @Published @objc dynamic var thumbnailIsDownloaded = false
     @Published var isDownloaded = false
     typealias AlertInfo = (title: String, message: String)
     @Published var alertInfo: AlertInfo = ("", "")
@@ -25,41 +25,47 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     var videoDescription: String
     var playbackPosition = 0.0
     var lastOpened = Date()
-    var parentFolderId = kROOTFolder
+    var parentFolderId: String?
     var playbackPositionTimer: Timer?
-    var playerIsPlayingPublisher: AnyCancellable?
+    var playerIsPlayingKVO: NSKeyValueObservation?
     var downloadProgress = Progress()
     let downloadDate = Date()
-    @Published var downloadStatus: DownloadStatus = .waiting
+    @objc dynamic var downloadStatusDidChange = false
+    @Published var downloadStatus: DownloadStatus = .waiting {
+        didSet {
+            downloadStatusDidChange = true
+        }
+    }
+    @Published var downloadFractionCompleted = 0.0
     static let example = Video()
     // Computed Proprieties
     var avPlayer: AVPlayer {
-            let videoPlayer = AVPlayer(url: videoUrl)
-            if Settings.shared.savePlaybackPosition {
-                playerIsPlayingPublisher = videoPlayer.publisher(for: \.rate).sink { [self] in
-                     if $0 == 0 {
-                         self.playbackPositionTimer?.invalidate()
-                         // if close to end reset time
-                         if let duration = videoPlayer.currentItem?.duration, videoPlayer.currentTime() == duration {
-                             self.playbackPosition = 0
-                         }
-                     } else {
-                         self.playbackPositionTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true, block: {timer in
-                             self.playbackPosition = videoPlayer.currentTime().seconds
-                             print(self.playbackPosition)
-                         })
-                     }
-                 }
-                videoPlayer.seek(to: CMTime(seconds: playbackPosition, preferredTimescale: 1))
+        let videoPlayer = AVPlayer(url: videoUrl)
+        if Settings.shared.savePlaybackPosition {
+            playerIsPlayingKVO = videoPlayer.observe(\.rate) { player, _ in
+                if player.rate == 0 {
+                    self.playbackPositionTimer?.invalidate()
+                    // if close to end reset time
+                    if let duration = videoPlayer.currentItem?.duration, videoPlayer.currentTime() == duration {
+                        self.playbackPosition = 0
+                    }
+                } else {
+                    self.playbackPositionTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true, block: {timer in
+                        self.playbackPosition = videoPlayer.currentTime().seconds
+                        print(self.playbackPosition)
+                    })
+                }
             }
-            return videoPlayer
-    }
-    var asceptRatio: Double? {
-        if let data = try? Data(contentsOf: thumbnailUrl) {
-            let image = UIImage(data: data)!
-            return image.size.width / image.size.height
+            videoPlayer.seek(to: CMTime(seconds: playbackPosition, preferredTimescale: 1))
         }
-        return nil
+        return videoPlayer
+    }
+    var aspectRatio: CGFloat {
+        guard let data = imageData, let image = UIImage(data: data) else { return 1 }
+        let width = image.size.width
+        let height = image.size.height
+        print(width / height)
+        return width / height
     }
     var imageData: Data? {
         try? Data(contentsOf: thumbnailUrl)
@@ -67,6 +73,8 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     var videoSize: String {
         ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
     }
+    var downloadSpeedTimeStamp = CFAbsoluteTimeGetCurrent()
+    @Published var downloadSpeed = ""
     var fileSize: Int64 {
         do {
             return Int64((try FileManager.default.attributesOfItem(atPath: videoUrl.path) as NSDictionary).fileSize())
@@ -92,7 +100,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     // MARK: URLS
     /// URL of  video
     var videoUrl: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(videoId + ".mp4")
+        try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent(videoId + ".mp4")
     }
     /// URL of the thumbnail
     var thumbnailUrl: URL {
@@ -116,18 +124,21 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         return hasher.finalize()
     }
     func delete() {
-            try? FileManager.default.removeItem(at: videoUrl)
-            try? FileManager.default.removeItem(at: thumbnailUrl)
-        if parentFolderId == kROOTFolder {
-            VideoDatabase.shared.videoFolders.removeAll {
+        try? FileManager.default.removeItem(at: videoUrl)
+        try? FileManager.default.removeItem(at: thumbnailUrl)
+        if let parentFolderId = parentFolderId, let folder = Folder.folderFrom(parentFolderId) {
+            print(parentFolderId)
+            folder.videoFolderStore.removeAll {
                 $0.video === self
             }
         } else {
-            let parentFolder = Folder.folderFrom(parentFolderId)
-            parentFolder.videoFolders.removeAll {
+            parentFolderId = nil
+            VideoDatabase.shared.videoFolderStore.removeAll {
                 $0.video === self
             }
         }
+        DTDownloadManager.shared.cancelDownloads(for: self)
+        DTSpeedDownloadManager.shared.cancelDownloads(for: self)
     }
     func fileAtributes() throws -> Dictionary<FileAttributeKey, Any> {
         try FileManager.default.attributesOfItem(atPath: videoUrl.path)
@@ -139,19 +150,48 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     }
     
     func videoFinishedDownloading(_ video: URL) {
-        logs.insert(NSError(domain: "Video Finished Downloading for \(title).", code: 0, userInfo: nil), at: 0)
+        Logs.addError(NSError(domain: "Video Finished Downloading for \(title).", code: 0, userInfo: nil))
         do {
             try FileManager.default.moveItem(at: video, to: videoUrl)
+            duration = Int(AVAsset(url: videoUrl).duration.seconds)
             isDownloaded = true
             downloadStatus = .downloaded
-            duration = Int(AVAsset(url: videoUrl).duration.seconds)
         } catch {
-            logs.insert(error, at: 0)
+            Logs.addError(error)
             print(error)
         }
         let tempURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("thumbnail.jpg")
         try? FileManager.default.copyItem(at: thumbnailUrl, to: tempURL)
         DTNotificationManager.shared.sendNotification(title: "Finished Downloading", message: "\"\(title)\" finished downloading.", identifier: videoId, thumbnailImage: tempURL)
+        VideoDatabase.saveVideos()
+    }
+    func videoPartiallyDownloaded(_ video: URL) {
+        Logs.addError(NSError(domain: "Video Partially Finished Downloading for \(title).", code: 0, userInfo: nil))
+        do {
+            var fileHandle = try? FileHandle(forUpdating: videoUrl)
+            if fileHandle == nil {
+                try Data().write(to: videoUrl)
+                fileHandle = try FileHandle(forUpdating: videoUrl)
+            }
+            
+            let offset = try fileHandle!.seekToEnd()
+            try fileHandle!.write(contentsOf: try! Data(contentsOf: video))
+            try fileHandle!.close()
+            print("File Offset: \(offset)")
+            print("Size Of Data Added: \(try Data(contentsOf: video).count)")
+        } catch {
+            Logs.addError(error)
+            print(error)
+        }
+    }
+    func videoDidFinishSpeedDownloading(videoSize: Int64) {
+        duration = Int(AVAsset(url: videoUrl).duration.seconds)
+        let tempURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("thumbnail.jpg")
+        try? FileManager.default.copyItem(at: thumbnailUrl, to: tempURL)
+        DTNotificationManager.shared.sendNotification(title: "Finished Downloading", message: "\"\(title)\" finished downloading.", identifier: videoId, thumbnailImage: tempURL)
+        VideoDatabase.saveVideos()
+        downloadStatus = .downloaded
+        isDownloaded = true
     }
     func downloadDidFailWith(error: Error) {
         let error = error as NSError
@@ -167,7 +207,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
                 self.showAlert = true
             }
         }
-        logs.insert(error, at: 0)
+        Logs.addError(error)
     }
     enum CodingKeys: String, CodingKey {
         case title
@@ -215,39 +255,38 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         playbackPosition = try values.decode(Double.self, forKey: .playbackPosition)
         isDownloaded = try values.decode(Bool.self, forKey: .isDownloaded)
         lastOpened = try values.decode(Date.self, forKey: .lastOpened)
-        parentFolderId = try values.decode(String.self, forKey: .parentFolderId)
+        parentFolderId = try values.decode(String?.self, forKey: .parentFolderId)
         super.init()
         if hasVideo {
             downloadStatus = .downloaded
             isDownloaded = true
         }
         if imageData == nil {
-            var thumbReq = URLRequest(url: URL(string: "https://i.ytimg.com/vi/\(videoId)/sddefault.jpg")!)
-            thumbReq.allowsCellularAccess = Settings.shared.useCellularData
+            let thumbReq = URLRequest(url: URL(string: "https://i.ytimg.com/vi/\(videoId)/sddefault.jpg")!)
             URLSession.shared.dataTask(with: thumbReq) { [self] (data, response, error) in
                 guard error == nil else { return }
                 try? data!.write(to: thumbnailUrl)
                 DispatchQueue.main.async {
-                    thumbnailIsDownloaded = true
+                    self.thumbnailIsDownloaded = true
                 }
             }.resume()
         }
     }
-    static func video(fromVideoId: String, parentFolderId: String = kROOTFolder) {
+    static func video(fromVideoId: String, parentFolderId: String? = nil) {
         var youtubeFormatter = YoutubeAPIParser(fromVideoId)
         youtubeFormatter.format { (videoInfo) in
             DispatchQueue.main.async {
                 guard let youtubeInfo = videoInfo else { return }
                 let video = Video(youtubeInfo: youtubeInfo, parentFolderId: parentFolderId)
                 guard let unwrappedVideo = video else {
-                    logs.insert(NSError(domain: "Video init failed", code: 0, userInfo: nil), at: 0)
+                    Logs.addError(NSError(domain: "Video init failed", code: 0, userInfo: nil))
                     return
                 }
-                if parentFolderId == kROOTFolder {
-                    VideoDatabase.shared.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
+                if parentFolderId == nil {
+                    VideoDatabase.shared.videoFolderStore.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
                 } else {
-                    let parentFolder = Folder.folderFrom(parentFolderId)
-                    parentFolder.videoFolders.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
+                    guard let parentFolder = Folder.folderFrom(parentFolderId!) else { return }
+                    parentFolder.videoFolderStore.insert(VideoFolder(video: unwrappedVideo, folder: nil), at: 0)
                 }
             }
         }
@@ -310,7 +349,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         }
         // if nil exit
         if videoFormat == nil {
-            logs.insert(NSError(domain: "Video not found. Failed in Video initializer. file: Video.swift, line: 167", code: 1, userInfo: nil), at: 0)
+            Logs.addError(NSError(domain: "Video not found. Failed in Video initializer. file: Video.swift, line: 167", code: 1, userInfo: nil))
             return nil
         }
         let videoUrl: URL
@@ -326,11 +365,15 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         super.init()
         let thumbnail = "https://i.ytimg.com/vi/\(videoId)/sddefault.jpg"
         let thumbnailUrl = URL(string: thumbnail)!
-        DTDownloadManager.shared.download(videoURL: videoUrl, thumbnailURL: thumbnailUrl, video: self)
+        if Settings.shared.useSpeedDownloader {
+            DTSpeedDownloadManager.shared.download(video: self, videoURL: videoUrl, thumbnailURL: thumbnailUrl)
+        } else {
+            DTDownloadManager.shared.download(videoURL: videoUrl, thumbnailURL: thumbnailUrl, video: self)
+        }
         try? FileManager.default.removeItem(at: videoUrl)
         print(videoUrl)
         print(thumbnailUrl)
-        logs.insert(NSError(domain: "Successfully parsed youtube video \(title).", code: 0, userInfo: nil), at: 0)
+        Logs.addError(NSError(domain: "Successfully parsed youtube video \(title).", code: 0, userInfo: nil))
     }
 }
 
