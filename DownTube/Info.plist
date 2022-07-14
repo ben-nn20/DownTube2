@@ -67,5 +67,12 @@
 			<dict/>
 		</dict>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Local network access is necessary to send videos between devices.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_downtube-sharer._tcp</string>
+		<string>_downtube-sharer._udp</string>
+	</array>
 </dict>
 </plist>

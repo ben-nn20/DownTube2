@@ -46,8 +46,6 @@ class DTDownloadManager: NSObject {
         }
         if downloadingVideos.count < numberOfConcurrentDownloads {
             // video urlSessionTask
-            var req = URLRequest(url: videoURL)
-            req.addValue("", forHTTPHeaderField: "Range")
             let videoDownloadTask = urlSession.downloadTask(with: videoURL)
             videoDownloadTask.resume()
             video.downloadProgress = videoDownloadTask.progress
@@ -75,7 +73,9 @@ class DTDownloadManager: NSObject {
             $0.video === video
         }
         if let videoAndInfo = videoAndInfo {
-            videoAndInfo.videoTask.cancel()
+            videoAndInfo.videoTask.cancel { data in
+                videoAndInfo.video.downloadResumeData = data
+            }
             downloadingVideos.removeAll {
                 $0 == videoAndInfo
             }
@@ -105,21 +105,39 @@ class DTDownloadManager: NSObject {
             video.downloadStatus = .downloading
         }
     }
+    func resumeWtih(resumeData: Data, video: Video) {
+        let task = urlSession.downloadTask(withResumeData: resumeData)
+        downloadingVideos.append((task, video))
+        task.resume()
+        video.downloadProgress = task.progress
+        video.downloadResumeData = nil
+        video.downloadStatus = .downloading
+        video.isDownloaded = false
+    }
     private func getVideoFrom(task: URLSessionTask) -> Video? {
         guard let set = downloadingVideos.first(where: { $0.videoTask === task }) else { return nil }
         return set.video
     }
+    func handleDownloadingVideos() {
+        // Pause all downloading videos
+        downloadingVideos.forEach { task in
+            task.videoTask.cancel { data in
+                task.video.downloadResumeData = data
+                print(data as Any)
+            }
+        }
+    }
 }
-extension DTDownloadManager: URLSessionDownloadDelegate {
+//MARK: Extension
+extension DTDownloadManager: URLSessionDownloadDelegate, URLSessionDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let video = getVideoFrom(task: downloadTask) else { return }
+        guard let video = getVideoFrom(task: downloadTask) else { downloadTask.cancel(); return }
         DispatchQueue.main.sync {
             video.videoFinishedDownloading(location)
         }
         downloadingVideos.removeAll {
             $0.video === video
         }
-        
         guard let nextVideo = downloadQueue.first, downloadingVideos.count < numberOfConcurrentDownloads else { return }
         download(videoURL: nextVideo.videoURL, video: nextVideo.video)
         downloadQueue.removeAll {
@@ -127,8 +145,11 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
         }
     }
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        guard let video = getVideoFrom(task: downloadTask) else { return }
+        guard let video = getVideoFrom(task: downloadTask) else { downloadTask.cancel(); return }
         DispatchQueue.main.async {
+           let size = Int64((downloadTask.response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Length") ?? "0") ?? 0
+            video.downloadedVideoSize = totalBytesWritten
+            video.totalVideoSize = size
             video.downloadFractionCompleted = video.downloadProgress.fractionCompleted
             let timeDiff = CFAbsoluteTimeGetCurrent() - video.downloadSpeedTimeStamp
             let speed = Double(bytesWritten) / timeDiff
@@ -137,6 +158,7 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
         }
     }
     // Handle Resume Data
+    
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let video = getVideoFrom(task: task), let error = error else { return }
         video.downloadDidFailWith(error: error)
@@ -145,6 +167,23 @@ extension DTDownloadManager: URLSessionDownloadDelegate {
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
         DispatchQueue.main.async { [weak self] in
             self?.urlSessionCallback?()
+        }
+    }
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didResumeAtOffset fileOffset: Int64, expectedTotalBytes: Int64) {
+        guard let video = getVideoFrom(task: downloadTask) else { return }
+        DispatchQueue.main.sync {
+            var size: Int64?
+            if let httpHeader = downloadTask.response as? HTTPURLResponse {
+                if let rangeStr = httpHeader.value(forHTTPHeaderField: "content-range") {
+                    let index = rangeStr.firstIndex(of: "/")!
+                    size = Int64(rangeStr[rangeStr.index(after: index) ... rangeStr.index(before: rangeStr.endIndex)])!
+                } else {
+                    size = Int64((downloadTask.response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Length") ?? "0") ?? 0
+                }
+            }
+             video.downloadedVideoSize = fileOffset
+             video.totalVideoSize = size ?? 0
+             video.downloadFractionCompleted = video.downloadProgress.fractionCompleted
         }
     }
 }

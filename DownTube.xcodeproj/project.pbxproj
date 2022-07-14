@@ -23,11 +23,12 @@
 		C13DBAD8266ADEBD007ADD8A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C13DBAD7266ADEBD007ADD8A /* Assets.xcassets */; };
 		C14CF9CC26D84C9D00C60291 /* AddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CB26D84C9C00C60291 /* AddButton.swift */; };
 		C14CF9CE26D84CC600C60291 /* SelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CD26D84CC600C60291 /* SelectionView.swift */; };
-		C14CF9D026D850A200C60291 /* FolderOptionsPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */; };
 		C14EEA83268A50180075523F /* VideoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14EEA82268A50180075523F /* VideoCell.swift */; };
 		C1784192268ED4210009BFF1 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1784191268ED4210009BFF1 /* InputView.swift */; };
 		C17B036126BCF44E005D990A /* VideoList.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17B036026BCF44E005D990A /* VideoList.swift */; };
 		C17D23F82866283900751BEB /* DTSpeedDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17D23F72866283900751BEB /* DTSpeedDownloadManager.swift */; };
+		C17DDC13287CF2AA00AE1DF5 /* SharingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17DDC12287CF2AA00AE1DF5 /* SharingManager.swift */; };
+		C17DDC15287D159800AE1DF5 /* SharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17DDC14287D159800AE1DF5 /* SharingView.swift */; };
 		C17FF3BB26F02FA600C30AFF /* VideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17FF3B926F02FA600C30AFF /* VideoViewController.swift */; };
 		C17FF3C026F171BD00C30AFF /* UIKit Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C17FF3BF26F171BD00C30AFF /* UIKit Storyboard.storyboard */; };
 		C1884DD926BCDDF50054BBD3 /* MainViewUpdator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1884DD826BCDDF50054BBD3 /* MainViewUpdator.swift */; };
@@ -81,13 +82,14 @@
 		C13DBADC266ADEBD007ADD8A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C14CF9CB26D84C9C00C60291 /* AddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddButton.swift; sourceTree = "<group>"; };
 		C14CF9CD26D84CC600C60291 /* SelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionView.swift; sourceTree = "<group>"; };
-		C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderOptionsPopup.swift; sourceTree = "<group>"; };
 		C14EEA82268A50180075523F /* VideoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCell.swift; sourceTree = "<group>"; };
 		C162BF9D26C5A28F003C7843 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		C162BF9F26C5A311003C7843 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		C1784191268ED4210009BFF1 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 		C17B036026BCF44E005D990A /* VideoList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoList.swift; sourceTree = "<group>"; };
 		C17D23F72866283900751BEB /* DTSpeedDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTSpeedDownloadManager.swift; sourceTree = "<group>"; };
+		C17DDC12287CF2AA00AE1DF5 /* SharingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingManager.swift; sourceTree = "<group>"; };
+		C17DDC14287D159800AE1DF5 /* SharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingView.swift; sourceTree = "<group>"; };
 		C17FF3B926F02FA600C30AFF /* VideoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewController.swift; sourceTree = "<group>"; };
 		C17FF3BF26F171BD00C30AFF /* UIKit Storyboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "UIKit Storyboard.storyboard"; sourceTree = "<group>"; };
 		C1884DD826BCDDF50054BBD3 /* MainViewUpdator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewUpdator.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 		C1B8D39B2702680F002D2334 /* KVOWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KVOWrapper.swift; sourceTree = "<group>"; };
 		C1BCC1A62693DFF6008D0BC5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C1BCC1A82693E00A008D0BC5 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		C1D1B5B72869894800B947E6 /* DownTube.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DownTube.entitlements; sourceTree = "<group>"; };
 		C1DE0B1226940CBD003BC869 /* DTNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTNotificationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -143,6 +146,7 @@
 		C13DBACD266ADEB9007ADD8A /* DownTube */ = {
 			isa = PBXGroup;
 			children = (
+				C1D1B5B72869894800B947E6 /* DownTube.entitlements */,
 				C13DBACE266ADEB9007ADD8A /* AppDelegate.swift */,
 				C12872AC26DF027E00A6E294 /* VideoIndexer.swift */,
 				C1096595266ED2AF00A85959 /* Globals.swift */,
@@ -154,6 +158,7 @@
 				C18BF47A2693A8B800FFCB96 /* Extensions.swift */,
 				C18BF4762692D8CB00FFCB96 /* DTDownloadManager.swift */,
 				C17D23F72866283900751BEB /* DTSpeedDownloadManager.swift */,
+				C17DDC12287CF2AA00AE1DF5 /* SharingManager.swift */,
 				C1A5FDBF26D5F16D00383786 /* Enumerations.swift */,
 				C142100126D41687008DC20E /* Views */,
 				C1B4F61C26D074B90045F0B1 /* VideoDatabaseFiles */,
@@ -171,6 +176,7 @@
 				C195FAE126D9C08900DA7892 /* BlurView.swift */,
 				C106621C268A617400A121B6 /* ContentView.swift */,
 				C1784191268ED4210009BFF1 /* InputView.swift */,
+				C17DDC14287D159800AE1DF5 /* SharingView.swift */,
 				C1884DDD26BCE1170054BBD3 /* AudioPlayerView.swift */,
 				C195FAE526D9C49000DA7892 /* MediaPlayerButton.swift */,
 				C18FE85B26B8862E00323790 /* VideoView.swift */,
@@ -179,7 +185,6 @@
 				C17B036026BCF44E005D990A /* VideoList.swift */,
 				C14EEA82268A50180075523F /* VideoCell.swift */,
 				C120A90C269E5C74000C1DBB /* FolderView.swift */,
-				C14CF9CF26D850A100C60291 /* FolderOptionsPopup.swift */,
 				C14CF9CB26D84C9C00C60291 /* AddButton.swift */,
 				C14CF9CD26D84CC600C60291 /* SelectionView.swift */,
 				C1B4F61526D01AC40045F0B1 /* FolderCell.swift */,
@@ -309,7 +314,6 @@
 			files = (
 				C1BCC1A92693E00A008D0BC5 /* Settings.swift in Sources */,
 				C1A5FDCA26D6FABA00383786 /* Folder.swift in Sources */,
-				C14CF9D026D850A200C60291 /* FolderOptionsPopup.swift in Sources */,
 				C18BF4792693A79D00FFCB96 /* ErrorList.swift in Sources */,
 				C1B8D39C2702680F002D2334 /* KVOWrapper.swift in Sources */,
 				C12872AD26DF027E00A6E294 /* VideoIndexer.swift in Sources */,
@@ -335,8 +339,10 @@
 				C111C90026F01C03004ECDBB /* VideoDatabaseContainer.swift in Sources */,
 				C1784192268ED4210009BFF1 /* InputView.swift in Sources */,
 				C18BF47B2693A8B800FFCB96 /* Extensions.swift in Sources */,
+				C17DDC15287D159800AE1DF5 /* SharingView.swift in Sources */,
 				C1A5FDC026D5F16D00383786 /* Enumerations.swift in Sources */,
 				C129246826BB1846005C7B0C /* DTVideoPlayer.swift in Sources */,
+				C17DDC13287CF2AA00AE1DF5 /* SharingManager.swift in Sources */,
 				C120A90D269E5C74000C1DBB /* FolderView.swift in Sources */,
 				C1096587266E817500A85959 /* Video.swift in Sources */,
 				C195FAE226D9C08900DA7892 /* BlurView.swift in Sources */,
@@ -473,6 +479,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DownTube/DownTube.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N724UK46BJ;
 				INFOPLIST_FILE = DownTube/Info.plist;
@@ -484,7 +491,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = BenjaminNakiwala.DownTube;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -498,6 +505,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DownTube/DownTube.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N724UK46BJ;
 				INFOPLIST_FILE = DownTube/Info.plist;
@@ -509,7 +517,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = BenjaminNakiwala.DownTube;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

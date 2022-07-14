@@ -47,6 +47,7 @@ import CoreSpotlight
         if DTDownloadManager.shared.hasDownloads {
             DTNotificationManager.shared.sendNotification(title: "Background Downloads Paused", message: "Downtube has been terminated by the system. Downloads will resume when Downtube is launched.", thumbnailImage: nil)
         }
+        DTDownloadManager.shared.handleDownloadingVideos()
     }
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
         if identifier == "VideoDownloaderConfiguaration" {

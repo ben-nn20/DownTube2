@@ -13,18 +13,24 @@ struct ErrorList: View {
     @StateObject var logs = Logs.shared
     @Environment(\.dismiss) var dismiss
     var body: some View {
-        List($logs.logs, id: \.id) { log in
-            let error = log.wrappedValue
-            Text(error.domain + " " + error.localizedDescription)
-        }
-        .toolbar {
-            Button("Done") {
-                dismiss()
+        NavigationView {
+            List($logs.logs, id: \.id) { log in
+                let error = log.wrappedValue
+                Text(error.domain)
+                    .onTapGesture {
+                        self.error = error
+                        errorAlertShowing = true
+                    }
             }
-        }
-        .alert(isPresented: $errorAlertShowing, content: {
-            Alert(title: Text("Error"), message: Text(error!.description + "\n" + (error!.localizedFailureReason ?? "") ), dismissButton: nil)
+            .toolbar {
+                Button("Done") {
+                    dismiss()
+                }
+            }
+            .alert(isPresented: $errorAlertShowing, content: {
+                Alert(title: Text("Error"), message: Text(error!.description + "\n" + (error!.localizedFailureReason ?? "") ), dismissButton: nil)
         })
+        }
     }
 }
 

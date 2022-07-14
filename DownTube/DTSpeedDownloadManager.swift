@@ -14,6 +14,7 @@ class DTSpeedDownloadManager: NSObject {
         config.sessionSendsLaunchEvents = true
         config.shouldUseExtendedBackgroundIdleMode = true
         config.isDiscretionary = false
+        config.waitsForConnectivity = false
         return URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }()
     var urlSessionCallback: (() -> Void)?
@@ -30,14 +31,18 @@ class DTSpeedDownloadManager: NSObject {
             }
         }
     }
-    var directoryForURLS: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("\(currentlyDownloadingVideo!.video.title) files")
+    var directoryForURLS: URL? {
+        guard let currentlyDownloadingVideo = currentlyDownloadingVideo else {
+            return nil
+        }
+        try? FileManager.default.createDirectory(at: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("\(currentlyDownloadingVideo.video.title) files"), withIntermediateDirectories: true)
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("\(currentlyDownloadingVideo.video.title) files")
     }
     var timeForSpeed = CFAbsoluteTimeGetCurrent()
     private override init() {
         super.init()
     }
-    func download(video: Video, videoURL: URL, thumbnailURL: URL?) {
+    func download(video: Video, videoURL: URL, thumbnailURL: URL? = nil) {
         // Task for thumbnail
         if let thumbnailURL = thumbnailURL {
             let thumbReq = URLRequest(url: thumbnailURL)
@@ -51,18 +56,19 @@ class DTSpeedDownloadManager: NSObject {
         }
         if currentlyDownloadingVideo == nil {
             currentlyDownloadingVideo = (video, videoURL)
-            
+            beginDownloads()
+        } else {
+            downloadQueue.append((video, videoURL))
         }
     }
     func request() -> (req: URLRequest, startRange: Int64, endRange: Int64) {
         guard let currentlyDownloadingVideo = currentlyDownloadingVideo else {
             fatalError()
         }
-
-        let endRange = (rangeAccountedFor + downloadRange) < videoSize ? (rangeAccountedFor + downloadRange - 1) : videoSize
+        let endRange = (rangeAccountedFor + downloadRange) < videoSize ? (rangeAccountedFor + downloadRange) : videoSize
         let startRange = rangeAccountedFor
         var req = URLRequest(url: currentlyDownloadingVideo.videoURL)
-        req.setValue("bytes:\(rangeAccountedFor)-\(endRange)", forHTTPHeaderField: "Range")
+        req.setValue("bytes=\(rangeAccountedFor)-\(endRange)", forHTTPHeaderField: "Range")
         rangeAccountedFor += downloadRange
         return (req, startRange, endRange)
     }
@@ -71,8 +77,8 @@ class DTSpeedDownloadManager: NSObject {
         let task = urlSession.downloadTask(with: reqAndRanges.req)
         downloadTasks.append((task, reqAndRanges.startRange, reqAndRanges.endRange))
         task.resume()
-        DispatchQueue.main.sync {
-            currentlyDownloadingVideo?.video.downloadStatus = .downloading
+        DispatchQueue.main.async {
+            self.currentlyDownloadingVideo?.video.downloadStatus = .downloading
         }
     }
     func beginAllDownloads() {
@@ -84,7 +90,8 @@ class DTSpeedDownloadManager: NSObject {
         let taskAndRanges = downloadTasks.first {
             $0.task === task
         }!
-        let url = url(startRange: taskAndRanges.startRange, endRange: taskAndRanges.endRange)
+        guard let url = url(startRange: taskAndRanges.startRange, endRange: taskAndRanges.endRange) else { return }
+        
         try? FileManager.default.moveItem(at: location, to: url)
     }
     func finishAllDownloads() {
@@ -94,21 +101,30 @@ class DTSpeedDownloadManager: NSObject {
         downloadTasks.sorted {
             $0.endRange < $1.endRange
         }.forEach {
-            let url = url(startRange: $0.startRange, endRange: $0.endRange)
+            guard let url = url(startRange: $0.startRange, endRange: $0.endRange) else { return }
             currentlyDownloadingVideo.video.videoPartiallyDownloaded(url)
         }
     }
-    func url(startRange: Int64, endRange: Int64) -> URL {
-        directoryForURLS.appendingPathComponent("\(currentlyDownloadingVideo!.video.videoId) \(startRange) - \(endRange)")
+    func url(startRange: Int64, endRange: Int64) -> URL? {
+        guard let directoryForURLS = directoryForURLS else {
+            return nil
+        }
+        return directoryForURLS.appendingPathComponent("\(currentlyDownloadingVideo!.video.videoId) \(startRange) - \(endRange)")
     }
     func cancelDownloads(for video: Video) {
         if currentlyDownloadingVideo?.video === video {
             currentlyDownloadingVideo = nil
             downloadTasks.forEach { taskAndRanges in
                 taskAndRanges.task.cancel()
+                guard let directoryForURLS = directoryForURLS else {
+                    return
+                }
                 try? FileManager.default.removeItem(at: directoryForURLS)
             }
             downloadTasks.removeAll()
+            rangeAccountedFor = 0
+            videoSize = 10_000_010
+            downloadedRange = 0
         }
     }
     
@@ -119,6 +135,7 @@ extension DTSpeedDownloadManager: URLSessionDownloadDelegate {
             $0.task === downloadTask
         }) {
             downloadTask.cancel()
+            return
         }
         finishTask(downloadTask, location: location)
         if downloadedRange == videoSize {
@@ -131,15 +148,26 @@ extension DTSpeedDownloadManager: URLSessionDownloadDelegate {
         }) {
             downloadTask.cancel()
         }
+        // Set video Size {
+        if let httpHeader = downloadTask.response as? HTTPURLResponse, videoSize == 10_000_010 {
+            let rangeStr = httpHeader.value(forHTTPHeaderField: "Content-Range")!
+            let index = rangeStr.firstIndex(of: "/")!
+            let size = rangeStr[rangeStr.index(after: index) ... rangeStr.index(before: rangeStr.endIndex)]
+            videoSize = Int64(size)!
+        }
         guard let video = currentlyDownloadingVideo else { return }
-        let speed = Double(bytesWritten) / CFAbsoluteTimeGetCurrent() - timeForSpeed
+        let speed = Double(bytesWritten) / timeForSpeed - CFAbsoluteTimeGetCurrent()
         DispatchQueue.main.async {
             video.video.downloadSpeed = ByteCountFormatter.string(fromByteCount: Int64(speed), countStyle: .file) + "/s"
         }
         downloadedRange += bytesWritten
+        print(videoSize / downloadedRange)
+        DispatchQueue.main.sync {
+            video.video.downloadFractionCompleted = Double(videoSize / downloadedRange)
+        }
         timeForSpeed = CFAbsoluteTimeGetCurrent()
     }
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        
+        urlSessionCallback?()
     }
 }

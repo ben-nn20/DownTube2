@@ -9,10 +9,10 @@ import SwiftUI
 import AVKit
 
  struct VideoCell: View {
- //    @StateObject var mainViewUpdator = MainViewUpdator.shared
      @StateObject var orientation = Orientation()
      @EnvironmentObject var video: Video
      @State var shouldDelete = false
+     @State var showShareScreen = false
      var body: some View {
          HStack {
              // image
@@ -42,7 +42,7 @@ import AVKit
                              .foregroundColor(.secondary)
                              .font(.system(size: 12, weight: .regular, design: .rounded))
                      } else if video.downloadStatus == .downloading {
-                         Text("\(Int(video.downloadProgress.fractionCompleted * 100))% Downloaded | \(video.downloadSpeed)")
+                         Text("\(Int(video.downloadProgress.fractionCompleted * 100))% (\(ByteCountFormatter.string(fromByteCount: video.downloadedVideoSize, countStyle: .file)) of \(ByteCountFormatter.string(fromByteCount: video.totalVideoSize, countStyle: .file))) | \(video.downloadSpeed)")
                              .foregroundColor(.secondary)
                              .font(.system(size: 12, weight: .regular, design: .rounded))
                      }
@@ -90,7 +90,22 @@ import AVKit
                      Image(systemName: "arrow.down")
                  }
              }
-             
+             Button  {
+                 showShareScreen = true
+             } label: {
+                 HStack {
+                     Text("Share")
+                     Image(systemName: "square.and.arrow.up")
+                 }
+             }
+         }
+         .onDrag {
+             let provider = NSItemProvider(object: video)
+             provider.registerDataRepresentation(forTypeIdentifier: "public.video", visibility: .all) { handler in
+                 handler(video.sharingData(), nil)
+                 return nil
+            }
+             return provider
          }
          .frame(width: UIScreen.main.bounds.width, height: 70, alignment: .center)
          .alert(Text(video.alertInfo.title), isPresented: $video.showAlert) {
@@ -104,14 +119,9 @@ import AVKit
              }
              Button("Cancel", role: .cancel) {}
          }
-         .onDrag {
-             let provider = NSItemProvider()
-             provider.registerObject(ofClass: NSString.self, visibility: .ownProcess) { completion in
-                 let str = video.videoId as NSString
-                 completion(str, nil)
-                 return nil
-             }
-             return provider
+         .sheet(isPresented: $showShareScreen) {
+             SharingView()
+                 .environmentObject(video)
          }
      }
      static func cell(video: Video) -> some View {

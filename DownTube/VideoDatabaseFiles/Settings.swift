@@ -18,7 +18,9 @@ class Settings: ObservableObject, Codable {
     @Published var numberOfConcurrentDownloads = 3
     @Published var useSpeedDownloader = false {
         didSet {
-            numberOfConcurrentDownloads = 1
+            if useSpeedDownloader {
+                numberOfConcurrentDownloads = 1
+            }
         }
     }
     var showsDownloadDate = false

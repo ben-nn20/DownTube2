@@ -13,7 +13,6 @@ struct FolderView: View {
     @StateObject var settings = Settings.shared
     @Environment(\.editMode) var editMode
     @State var popupIsShowing = false
-    @State var inputViewIsShowing = false
     @State var selectionViewIsShowing = false
     @State var videoSelection = Set<ObjectIdentifier>()
     @State var shouldDeleteItems = Set<ObjectIdentifier>()
@@ -135,7 +134,7 @@ struct FolderView: View {
                     selectAllButtonText = "Deselect All"
                 }
             }, trailing: EditButton()
-                                    .foregroundColor(.blue))
+                .foregroundColor(.blue))
             .listStyle(PlainListStyle())
             .alert(isPresented: $shouldDelete) {
                 let videoFolders = folder.videoFolderStore.filter {
@@ -209,7 +208,6 @@ struct FolderView: View {
                                         .environmentObject(folder)
                                 })
                         }
-                        .onInsert(of: [UTType.plainText], perform: drop)
                         ForEach(filteredVideos) { video in
                             NavigationLink(
                                 destination: VideoView(video: video),
@@ -218,8 +216,6 @@ struct FolderView: View {
                                         .environmentObject(video)
                                 })
                         }
-                        .onInsert(of: [UTType.plainText], perform: drop)
-                        
                     } else {
                         ForEach(filteredFolders) { folder in
                             NavigationLink(
@@ -230,7 +226,6 @@ struct FolderView: View {
                                         .environmentObject(folder)
                                 })
                         }
-                        .onInsert(of: [UTType.plainText], perform: drop)
                         ForEach(filteredVideos) { video in
                             NavigationLink(
                                 destination: VideoView(video: video),
@@ -239,7 +234,6 @@ struct FolderView: View {
                                         .environmentObject(video)
                                 })
                         }
-                        .onInsert(of: [UTType.plainText], perform: drop)
                     }
                 } else {
                     //MARK: Searching List
@@ -258,13 +252,29 @@ struct FolderView: View {
                             label: {
                                 VideoCell()
                                     .environmentObject(video)
-                        })
+                            })
+                    }
+                    .onInsert(of: ["public.video"]) { index, providers in
+                        providers[0].loadObject(ofClass: Video.self) { video, error in
+                            guard let video = video as? Video else {
+                                return
+                            }
+                            if let parentFolderId = video.parentFolderId, let folder = Folder.folderFrom(parentFolderId) {
+                                print(parentFolderId)
+                                folder.videoFolderStore.removeAll {
+                                    $0.video === video
+                                }
+                            } else {
+                                video.parentFolderId = nil
+                                VideoDatabase.shared.videoFolderStore.removeAll {
+                                    $0.video === video
+                                }
+                            }
+                            folder.videoFolderStore.insert(VideoFolder(video: video, folder: nil), at: index)
+                        }
                     }
                 }
             }
-            .overlay(AddButton() {
-                popupIsShowing.toggle()
-            })
             .searchable(text: $searchText)
             .navigationTitle(folder.name)
             .navigationBarItems(leading: Button {
@@ -290,12 +300,7 @@ struct FolderView: View {
                     }
                 }
             }, trailing: EditButton()
-                                    .foregroundColor(.blue))
-            .sheet(isPresented: $inputViewIsShowing) {
-                popupIsShowing = false
-            } content: {
-               InputView(parentFolderId: folder.id)
-            }
+                .foregroundColor(.blue))
             .sheet(isPresented: $selectionViewIsShowing) {
                 popupIsShowing = false
                 let videos = VideoDatabase.shared.allVideos
@@ -306,27 +311,14 @@ struct FolderView: View {
                 }
                 folder.videoFolderStore.append(contentsOf: videoFolders)
             } content: {
-                   SelectionView()
+                SelectionView()
             }
             .listStyle(PlainListStyle())
         }
     }
-    private func drop(at index: Int, _ items: [NSItemProvider]) {
-           for item in items {
-               _ = item.loadObject(ofClass: NSString.self) { vidID, _ in
-                   DispatchQueue.main.async {
-                       let video = VideoDatabase.shared.allVideos.first {
-                           $0.videoId == vidID as! String
-                       }
-                       VideoDatabase.shared.remove(video)
-                       folder.add(video)
-                   }
-               }
-           }
+}
+struct FolderView_Previews: PreviewProvider {
+    static var previews: some View {
+        FolderView()
     }
 }
-    struct FolderView_Previews: PreviewProvider {
-        static var previews: some View {
-            FolderView()
-        }
-    }

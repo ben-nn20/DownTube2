@@ -36,19 +36,7 @@ struct FolderCell: View {
                     }
                 }
             }
-            .onDrop(of: [UTType.plainText.identifier], isTargeted: $isTargeted) { providers in
-                guard let provider = providers.first(where: {
-                    $0.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
-                }) else { return false }
-                    _ = provider.loadObject(ofClass: String.self, completionHandler: { vidID, error in
-                        let video = VideoDatabase.shared.allVideos.first {
-                            $0.videoId == vidID
-                        }
-                        VideoDatabase.shared.remove(video)
-                        folder.add(video)
-                    })
-                return true
-            }
+            .foregroundColor(isTargeted ? .gray.opacity(0.5) : .primary)
             .contextMenu {
                 Button {
                     shouldDelete = true
@@ -70,10 +58,32 @@ struct FolderCell: View {
                     isRenaming = true
                 } label: {
                     HStack {
-                        Text("Remane")
+                        Text("Rename")
                         Image(systemName: "pencil")
                     }
                 }
+            }
+            .onDrop(of: ["public.video"], isTargeted: $isTargeted) { providers in
+                providers[0].loadObject(ofClass: Video.self) { video, error in
+                    guard let video = video as? Video else {
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        print(video.parentFolderId)
+                        if let parentFolderId = video.parentFolderId, let folder = Folder.folderFrom(parentFolderId) {
+                            folder.videoFolderStore.removeAll {
+                                $0.video === video
+                            }
+                        } else {
+                            video.parentFolderId = nil
+                            VideoDatabase.shared.videoFolderStore.removeAll {
+                                $0.video === video
+                            }
+                        }
+                        folder.add(video, folder)
+                    }
+                }
+                return providers[0].canLoadObject(ofClass: Video.self)
             }
             .foregroundColor(isTargeted ? .secondary : .none)
             .alert(Text("Delete Folder?"), isPresented: $shouldDelete) {

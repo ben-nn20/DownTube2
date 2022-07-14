@@ -54,6 +54,11 @@ class VideoDatabase: NSObject, VideoDatabaseContainer, ObservableObject {
         } catch {
             print(error)
             Logs.addError(error)
+            try? FileManager.default.removeItem(at: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0])
+            try? FileManager.default.createDirectory(at: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0], withIntermediateDirectories: true)
+            let encoder = PropertyListEncoder()
+            let data = try? encoder.encode([VideoFolder]())
+            try? data?.write(to: url)
             return [VideoFolder]()
         }
     }
@@ -66,6 +71,7 @@ class VideoDatabase: NSObject, VideoDatabaseContainer, ObservableObject {
             Logs.addError(error)
             fatalError()
         }
+        print(url)
     }
 }
 class VideoFolder: NSObject, Codable, Identifiable {

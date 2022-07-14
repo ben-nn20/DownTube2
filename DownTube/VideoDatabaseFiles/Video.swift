@@ -28,8 +28,32 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     var parentFolderId: String?
     var playbackPositionTimer: Timer?
     var playerIsPlayingKVO: NSKeyValueObservation?
-    var downloadProgress = Progress()
+    var downloadProgress = Progress() {
+        didSet {
+            progressCancellable = downloadProgress.publisher(for: \.fractionCompleted).sink {
+                self.downloadFractionCompleted = $0
+            }
+        }
+    }
+    var progressCancellable: AnyCancellable?
+    var totalVideoSize: Int64 = 0
+    var downloadedVideoSize: Int64 = 0
     let downloadDate = Date()
+    var downloadResumeData: Data? {
+        get {
+            try? Data(contentsOf: resumeDataURL)
+        }
+        set {
+            if let downloadResumeData = newValue {
+                try? downloadResumeData.write(to: resumeDataURL)
+            } else {
+               try? FileManager.default.removeItem(at: resumeDataURL)
+            }
+        }
+    }
+    var resumeDataURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("ResumeDataFor\(videoId)")
+    }
     @objc dynamic var downloadStatusDidChange = false
     @Published var downloadStatus: DownloadStatus = .waiting {
         didSet {
@@ -139,14 +163,72 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         }
         DTDownloadManager.shared.cancelDownloads(for: self)
         DTSpeedDownloadManager.shared.cancelDownloads(for: self)
+        downloadResumeData = nil
     }
     func fileAtributes() throws -> Dictionary<FileAttributeKey, Any> {
         try FileManager.default.attributesOfItem(atPath: videoUrl.path)
     }
-    
+    func sharingData() -> Data? {
+        let plistEncoder = PropertyListEncoder()
+        let data = try? plistEncoder.encode(self)
+        return data
+    }
     func reDownload() {
-        delete()
-        Video.video(fromVideoId: videoId, parentFolderId: parentFolderId)
+        // Stop Downloads
+        DTDownloadManager.shared.cancelDownloads(for: self)
+        DTSpeedDownloadManager.shared.cancelDownloads(for: self)
+        downloadStatus = .waiting
+        if let downloadResumeData = downloadResumeData, !Settings.shared.useSpeedDownloader {
+            DTDownloadManager.shared.resumeWtih(resumeData: downloadResumeData, video: self)
+        } else {
+            var youtubeFormatter = YoutubeAPIParser(videoId)
+            youtubeFormatter.format { (videoInfo) in
+                DispatchQueue.main.sync {
+                    guard let youtubeInfo = videoInfo else { return }
+                    // Get URL
+                    guard let formats = youtubeInfo.streamingData!.formats else {
+                        return
+                    }
+                    var videoFormat: VideoInfo.StreamingData.Format?
+                    switch Settings.shared.preferredVideoQuality {
+                    case .medium:
+                        videoFormat = formats.first {
+                            $0.itag! == 22
+                        }
+                    case .low:
+                        videoFormat = formats.first {
+                            $0.itag == 18
+                        }
+                    }
+                    if videoFormat == nil {
+                        // try low
+                        videoFormat = formats.first {
+                            $0.itag == 18
+                        }
+                    }
+                    // if nil exit
+                    if videoFormat == nil {
+                        Logs.addError(NSError(domain: "Video not found. Failed in Video initializer. file: Video.swift, line: 167", code: 1, userInfo: nil))
+                        return
+                    }
+                    let videoUrl: URL
+                    if let url = videoFormat!.url {
+                        videoUrl = URL(string: url)!
+                    } else {
+                        var sig = videoFormat!.signatureCipher!
+                        sig.replaceOccurances(of: "url=", with: "Ω")
+                        let ohmIndex = sig.firstIndex(of: "Ω")!
+                        sig.removeSubrange(sig.firstIndex(of: sig.first!)! ... ohmIndex)
+                        videoUrl = URL(string: sig)!
+                    }
+                    if Settings.shared.useSpeedDownloader {
+                        DTSpeedDownloadManager.shared.download(video: self, videoURL: videoUrl)
+                    } else {
+                        DTDownloadManager.shared.download(videoURL: videoUrl, video: self)
+                    }
+                }
+            }
+        }
     }
     
     func videoFinishedDownloading(_ video: URL) {
@@ -224,6 +306,7 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         case lastOpened
         case parentFolderId
     }
+    // MARK: Codable Functions
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(title, forKey: .title)
@@ -240,7 +323,6 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
         try container.encode(lastOpened, forKey: .lastOpened)
         try container.encode(parentFolderId, forKey: .parentFolderId)
     }
-    // MARK: Initializers
     required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         title = try values.decode(String.self, forKey: .title)
@@ -271,7 +353,11 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
                 }
             }.resume()
         }
+        if let downloadResumeData = downloadResumeData,  !Settings.shared.useSpeedDownloader {
+            DTDownloadManager.shared.resumeWtih(resumeData: downloadResumeData, video: self)
+        }
     }
+    // MARK: Callable INIT
     static func video(fromVideoId: String, parentFolderId: String? = nil) {
         var youtubeFormatter = YoutubeAPIParser(fromVideoId)
         youtubeFormatter.format { (videoInfo) in
@@ -291,6 +377,18 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
             }
         }
     }
+    static func addVideo(from data: Data) {
+        if let video = try? PropertyListDecoder().decode(Video.self, from: data) {
+            VideoDatabase.shared.videoFolderStore.insert(VideoFolder(video: video, folder: nil), at: 0)
+            video.downloadStatus = .downloading
+        }
+    }
+    static func video(for id: String) -> Video? {
+        VideoDatabase.shared.allVideos.first {
+            $0.videoId == id
+        }
+    }
+    // MARK: Main INIT
     private override init() {
         self.title = "Title"
         self.channelName = "Channel Name"
@@ -335,7 +433,6 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
             videoFormat = formats.first {
                 $0.itag! == 22
             }
-            
         case .low:
             videoFormat = formats.first {
                 $0.itag == 18
@@ -377,3 +474,23 @@ class Video: NSObject, ObservableObject, Codable, Identifiable {
     }
 }
 
+extension Video: NSItemProviderWriting, NSItemProviderReading {
+    static var readableTypeIdentifiersForItemProvider: [String] {
+        ["public.video"]
+    }
+    
+    static var writableTypeIdentifiersForItemProvider: [String] {
+        return ["public.video"]
+    }
+    
+    func loadData(withTypeIdentifier typeIdentifier: String, forItemProviderCompletionHandler completionHandler: @escaping (Data?, Error?) -> Void) -> Progress? {
+        if typeIdentifier == "public.video" {
+            completionHandler(self.sharingData(), nil)
+            return nil
+        }
+        return nil
+    }
+    static func object(withItemProviderData data: Data, typeIdentifier: String) throws -> Self {
+        try PropertyListDecoder().decode(Video.self, from: data) as! Self
+    }
+}
